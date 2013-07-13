@@ -1,0 +1,254 @@
+﻿Option Explicit
+Sub memberbunkatu()
+    'Microsoft Scripting Runtime　参照設定
+    Dim myFso As Scripting.FileSystemObject
+    Dim myTxt As Scripting.TextStream
+    Dim myStr As String
+    Dim outputStr As String
+    Dim strLength As Integer
+    Dim sheetTitle As String
+    Dim check1 As String
+    Dim check2 As String
+    Dim check3 As String
+    Dim check4 As String
+    Dim check5 As String
+    Dim strType As Integer
+    Dim GYO As Integer
+    Dim RETU As Integer
+    Dim mySht As Worksheet
+    Dim copySht As Worksheet
+    
+    
+    Set mySht = Worksheets("テンプレート")
+    Set copySht = Worksheets("テンプレート")
+    strType = 0     '初期値
+    GYO = 2
+    RETU = 1
+    
+    Set myFso = CreateObject("Scripting.FileSystemObject")
+    'ファイル名を指定する
+    Set myTxt = myFso.OpenTextFile(Filename:=ThisWorkbook.Path & _
+        "\TEST.txt", IOMode:=ForReading)
+'   Set myTxt = myFso.GetFile(Filepath:=ThisWorkbook.Path & _
+        "\Q_Test.txt") .OpenAsTextStream(IOMode:=ForReading)
+    With myTxt
+        Do Until .AtEndOfStream
+            myStr = .ReadLine
+            Debug.Print myStr    'テキストを出力する
+            check1 = Left(myStr, 1)
+            Debug.Print check1    'デバッグ：はじめの1文字目をチェック
+            Select Case check1
+                Case "0"
+                    Debug.Print "OK:0"
+                    outputStr = myStr
+                Case "1"
+                    Debug.Print "OK:1"
+                    strLength = Len(myStr)
+                    outputStr = Right(myStr, strLength - 6)
+                    sheetTitle = Mid(myStr, 6, 4)
+                    copySht.Copy After:=mySht
+                    Set mySht = ActiveSheet
+                    mySht.Name = sheetTitle
+                    GYO = 2
+                Case Else
+                
+                    Select Case strType
+                        Case "1"
+                            Debug.Print "OK:1"
+                            
+                        Case "2"
+                            Debug.Print "OK:2"
+                            
+                        Case Else
+                            outputStr = myStr
+                    End Select
+                
+                 End Select
+            mySht.Cells(GYO, RETU) = outputStr
+            GYO = GYO + 1
+            
+        Loop
+        .Close
+    End With
+    
+    Set myTxt = Nothing          'オブジェクトの解放
+    Set myFso = Nothing
+End Sub
+
+
+Sub Q_add()
+    'Microsoft Scripting Runtime　参照設定
+    Dim myFso As Scripting.FileSystemObject
+    Dim myTxt As Scripting.TextStream
+    Dim myStr As String
+    Dim outputStr As String
+    Dim strLength As Integer
+    Dim sheetTitle As String
+    Dim check1 As String
+    Dim check2 As String
+    Dim check3 As String
+    Dim check4 As String
+    Dim WS As Worksheet
+    Dim flag As Boolean
+    Dim strType As Integer
+    Dim GYO As Integer
+    Dim RETU As Integer
+    Dim mySht As Worksheet
+    Dim copySht As Worksheet
+    
+    Set copySht = Worksheets("テンプレート")
+    Set mySht = Worksheets("テンプレート")
+    strType = 0     '初期値
+    GYO = 2
+    RETU = 5
+    
+    Set myFso = CreateObject("Scripting.FileSystemObject")
+    'ファイル名を指定する
+    Set myTxt = myFso.OpenTextFile(Filename:=ThisWorkbook.Path & _
+        "\TEST.txt", IOMode:=ForReading)
+'   Set myTxt = myFso.GetFile(Filepath:=ThisWorkbook.Path & _
+        "\Q_Test.txt") .OpenAsTextStream(IOMode:=ForReading)
+    With myTxt
+        Do Until .AtEndOfStream
+            myStr = .ReadLine
+            Debug.Print myStr    'テキストを出力する
+            check1 = Left(myStr, 1)
+            Debug.Print check1    'デバッグ：はじめの1文字目をチェック
+            Select Case check1
+                Case "0"
+                    Debug.Print "OK:0"
+                    outputStr = myStr
+                Case "1"
+                    Debug.Print "OK:1"
+                    strLength = Len(myStr)
+                    outputStr = Right(myStr, strLength - 6)
+                    sheetTitle = Mid(myStr, 6, 4)
+'シートが存在するか調べる
+                    flag = False
+                    For Each WS In Worksheets
+                        If WS.Name = sheetTitle Then
+                            flag = True
+                        End If
+                    Next WS
+                    If flag = True Then
+                        Set mySht = Worksheets(sheetTitle)
+                    Else
+                        copySht.Copy After:=mySht
+                        Set mySht = ActiveSheet
+                        mySht.Name = sheetTitle
+                    End If
+                    GYO = 2
+                Case Else
+                
+                Select Case strType
+                    Case "1"
+                        Debug.Print "OK:1"
+                        
+                    Case "2"
+                        Debug.Print "OK:2"
+                        
+                    Case Else
+                        outputStr = myStr
+                End Select
+                
+            End Select
+            mySht.Cells(GYO, RETU) = outputStr
+            GYO = GYO + 1
+            
+        Loop
+        .Close
+    End With
+    
+    Set myTxt = Nothing          'オブジェクトの解放
+    Set myFso = Nothing
+End Sub
+
+
+
+
+Sub compare()
+    Dim rng1 As Range
+    Dim rng2 As Range
+    Dim lastRngRow As Integer
+    Dim i As Integer
+    Dim j As Integer
+    
+    For i = 2 To Worksheets.Count
+        lastRngRow = 最終セル探索(Worksheets(i))
+        With Worksheets(i)
+            For j = 2 To lastRngRow
+                Set rng1 = .Cells(j, 1)
+                Set rng2 = .Cells(j, 5)
+'                rng1.Select
+'                rng2.Select
+                If (rng1.Value = rng2.Value) Then
+                    .Cells(j, 3) = ""
+                    .Cells(j, 3).Interior.ColorIndex = 0
+                Else
+                    .Cells(j, 3) = "変更"
+                    .Cells(j, 3).Interior.ColorIndex = 6
+
+                End If
+            Next j
+        End With
+    Next i
+End Sub
+
+Function 最終セル探索(mysheet As Worksheet) As Integer
+    Dim myRng1 As Range
+    Dim myRng2 As Range
+    Dim comp1 As Integer
+    Dim comp2 As Integer
+
+    With mysheet
+        Set myRng1 = .Cells(Rows.Count, 1) '下端のセルを取得
+        With myRng1
+            If Len(.PrefixCharacter & .Formula) > 0 Then
+                Set myRng2 = myRng1 '下端のセルが該当する場合
+            Else
+            With .End(xlUp)
+                If Len(.PrefixCharacter & .Formula) > 0 Then
+                    Set myRng2 = .Cells(1)
+                End If
+            End With
+            End If
+
+            If myRng2 Is Nothing Then
+                MsgBox "何も入力されていません。"
+            Else
+'            mysheet.myRng2.Select '確認用
+                ' MsgBox myRng2.Address
+                
+                comp1 = myRng2.Row
+            End If
+        End With
+        Set myRng1 = .Cells(Rows.Count, 5) '下端のセルを取得
+        With myRng1
+            If Len(.PrefixCharacter & .Formula) > 0 Then
+                Set myRng2 = myRng1 '下端のセルが該当する場合
+            Else
+            With .End(xlUp)
+                If Len(.PrefixCharacter & .Formula) > 0 Then
+                    Set myRng2 = .Cells(1)
+                End If
+            End With
+            End If
+
+            If myRng2 Is Nothing Then
+                MsgBox "何も入力されていません。"
+            Else
+'            mysheet.myRng2.Select '確認用
+                ' MsgBox myRng2.Address
+                
+                comp2 = myRng2.Row
+            End If
+            Set myRng1 = Nothing 'オブジェクトの解放
+            Set myRng2 = Nothing
+            If comp1 < comp2 Then
+                最終セル探索 = comp2
+            Else
+                最終セル探索 = comp1
+            End If
+        End With
+    End With
+End Function
