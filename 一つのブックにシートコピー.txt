@@ -1,0 +1,32 @@
+﻿このマクロを使うと同じフォルダにあるエクセル（.xlsm）のシートをこのブックにコピーしていってくれます。
+数が多いと時間がかかるので注意
+同じ名前のファイルを開いているとエラーになるため注意してください。
+Option Explicit
+
+Sub Start()
+    Dim buf As String
+    Dim myWB As Workbook
+    Dim myWSNum As Integer
+    Dim copyWB As Workbook
+    Dim copyWSNum As Integer
+    Dim i As Integer
+
+    Set myWB = ThisWorkbook
+    myWSNum = myWB.Worksheets.Count
+    buf = Dir(ThisWorkbook.Path & "\*.xlsm")
+    Do While buf <> ""
+        If buf <> myWB.Name Then
+            Workbooks.Open ThisWorkbook.Path & "\" & buf
+            Set copyWB = ActiveWorkbook
+            copyWSNum = copyWB.Worksheets.Count
+            For i = 1 To copyWSNum
+                copyWB.Worksheets(i).Copy After:=myWB.Worksheets(myWSNum)
+                myWSNum = myWSNum + 1
+            Next i
+            copyWB.Close
+        End If
+        buf = Dir()
+    Loop
+
+End Sub
+
