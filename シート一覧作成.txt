@@ -1,26 +1,26 @@
-Sub sheetLISTCreate()
+ï»¿Sub sheetLISTCreate()
     Dim mainsht As Worksheet
     Dim createSht As Worksheet
     Dim GYO As Integer
     Dim i As Integer
     Dim j As Integer
-    Dim MLEndMessege As String      'ƒƒ“ƒo[ƒŠƒXƒg‚ÌI—¹ƒƒbƒZ[ƒW
-    Dim MLEndFlag As Boolean        'ƒƒ“ƒo[ƒŠƒXƒg‚ÌI—¹”»’è@TRUE=I—¹
-    Dim MLSheetName As String       'ƒƒ“ƒo[ƒŠƒXƒg‚ÌƒV[ƒg–¼‚ğ‹LÚ
-    Dim MLNameInfoStartMessage As String    'ƒƒ“ƒo[ƒŠƒXƒg‚Ì–¼‘Oˆê——‚ªo—Í‚³‚ê‚éˆês‘O‚Ì•¶š—ñ‚ğŠi”[
-    Dim MLNameOutputFlag As Boolean        'ƒƒ“ƒo[ƒŠƒXƒg–¼‘Oˆê——‚ğo—Í‚·‚éƒtƒ‰ƒO
-    Dim MLDSInfoLocation(9) As Integer    'ƒƒ“ƒo[ƒŠƒXƒg“à‚Ìî•ñ‚ªo‚Ä‚­‚éˆÊ’u‚Ü‚Å‚Ì•¶š”‚ğŠi”[
-    Dim MLDSInfo(9) As String       'ƒƒ“ƒo[ƒŠƒXƒg“à‚ÌDSî•ñ‚ğŠi”[‚·‚é
-    Dim MLDSInfoStrLength(9) As String       'ƒƒ“ƒo[ƒŠƒXƒg“à‚ÌDSî•ñ•¶š”‚ğŠi”[‚·‚é
+    Dim MLEndMessege As String      'ãƒ¡ãƒ³ãƒãƒ¼ãƒªã‚¹ãƒˆã®çµ‚äº†ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸
+    Dim MLEndFlag As Boolean        'ãƒ¡ãƒ³ãƒãƒ¼ãƒªã‚¹ãƒˆã®çµ‚äº†åˆ¤å®šã€€TRUE=çµ‚äº†
+    Dim MLSheetName As String       'ãƒ¡ãƒ³ãƒãƒ¼ãƒªã‚¹ãƒˆã®ã‚·ãƒ¼ãƒˆåã‚’è¨˜è¼‰
+    Dim MLNameInfoStartMessage As String    'ãƒ¡ãƒ³ãƒãƒ¼ãƒªã‚¹ãƒˆã®åå‰ä¸€è¦§ãŒå‡ºåŠ›ã•ã‚Œã‚‹ä¸€è¡Œå‰ã®æ–‡å­—åˆ—ã‚’æ ¼ç´
+    Dim MLNameOutputFlag As Boolean        'ãƒ¡ãƒ³ãƒãƒ¼ãƒªã‚¹ãƒˆåå‰ä¸€è¦§ã‚’å‡ºåŠ›ã™ã‚‹ãƒ•ãƒ©ã‚°
+    Dim MLDSInfoLocation(9) As Integer    'ãƒ¡ãƒ³ãƒãƒ¼ãƒªã‚¹ãƒˆå†…ã®æƒ…å ±ãŒå‡ºã¦ãã‚‹ä½ç½®ã¾ã§ã®æ–‡å­—æ•°ã‚’æ ¼ç´
+    Dim MLDSInfo(9) As String       'ãƒ¡ãƒ³ãƒãƒ¼ãƒªã‚¹ãƒˆå†…ã®DSæƒ…å ±ã‚’æ ¼ç´ã™ã‚‹
+    Dim MLDSInfoStrLength(9) As String       'ãƒ¡ãƒ³ãƒãƒ¼ãƒªã‚¹ãƒˆå†…ã®DSæƒ…å ±æ–‡å­—æ•°ã‚’æ ¼ç´ã™ã‚‹
     Dim myStr As String
     
-    MLSheetName = "MEMBERLIST"  'ƒƒ“ƒo[ƒŠƒXƒgƒV[ƒg–¼
+    MLSheetName = "MEMBERLIST"  'ãƒ¡ãƒ³ãƒãƒ¼ãƒªã‚¹ãƒˆã‚·ãƒ¼ãƒˆå
     Set mainsht = Worksheets(MLSheetName)
-    Set createSht = Worksheets("ƒV[ƒgˆê——")
+    Set createSht = Worksheets("ã‚·ãƒ¼ãƒˆä¸€è¦§")
     GYO = 1
     MLNameInfoStartMessage = "  MEMBER NAME     MODIFICATION   CREATED   LAST UPDATED   TOTAL   LINESTOATAL"
     MLEndMessege = "0 *** END OF MEMBER LISTING ***"
-    MLEndFlag = False 'ƒƒ“ƒo[ƒŠƒXƒg‚ª‚È‚¢ƒeƒLƒXƒg‚ÍTRUE‚É•ÏX‚·‚é
+    MLEndFlag = False 'ãƒ¡ãƒ³ãƒãƒ¼ãƒªã‚¹ãƒˆãŒãªã„ãƒ†ã‚­ã‚¹ãƒˆã¯TRUEã«å¤‰æ›´ã™ã‚‹
     MLNameInfoStartMessage = "  MEMBER NAME     MODIFICATION   CREATED   LAST UPDATED   TOTAL   LINESTOATAL"
     MLNameOutputFlag = False
     MLDSInfoLocation(0) = 3
