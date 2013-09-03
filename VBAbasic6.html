@@ -1,0 +1,546 @@
+Option Explicit
+Sub memberbunkatu()
+    'Microsoft Scripting Runtime　参照設定
+    Dim myFso As Scripting.FileSystemObject
+    Dim myTxt As Scripting.TextStream
+    Dim InputTxt As String          'inputテキストファイル名
+    Dim myStr As String             '1行ずつテキストを読み込む。その1行を格納している
+    Dim outputStr As String
+    Dim strLength As Integer
+    Dim sheetTitle As String
+    Dim check1 As String
+    Dim strType As Integer          '読み込んだ文字列の初めの文字が0，1以外の時の分岐に使用　*現在未使用
+    Dim GYO As Integer              '書き込みを行う行 *基本固定
+    Dim RETU As Integer             '書き込みを行う列 *基本固定
+    Dim mySht As Worksheet          '書き込み実行中のシート
+    Dim copySht As Worksheet        'テンプレートシート
+    Dim MLEndMessege As String      'メンバーリストの終了メッセージ
+    Dim MLEndFlag As Boolean        'メンバーリストの終了判定　TRUE=終了
+    Dim MLSheetName As String       'メンバーリストのシート名を記載
+    Dim MLNameInfoStartMessage As String    'メンバーリストの名前一覧が出力される一行前の文字列を格納
+    Dim MLNameOutputFlag As Boolean        'メンバーリスト名前一覧を出力するフラグ
+    Dim MLDSInfoLocation(9) As Integer    'メンバーリスト内の情報が出てくる位置までの文字数を格納
+    Dim MLDSInfo(9) As String       'メンバーリスト内のDS情報を格納する
+    Dim DSNameLocation As Integer    'DS名が出てくる位置までの文字数を格納
+    
+    Set mySht = Worksheets("テンプレート")
+    Set copySht = Worksheets("テンプレート")
+    InputTxt = "TEST.TXT"
+    
+    MLEndMessege = "0 *** END OF MEMBER LISTING ***"
+    MLEndFlag = False 'メンバーリストがないテキストはTRUEに変更する
+    MLSheetName = "MEMBERLIST"  'メンバーリストシート名
+    MLNameInfoStartMessage = "  MEMBER NAME     MODIFICATION   CREATED   LAST UPDATED   TOTAL   LINESTOATAL"
+    MLNameOutputFlag = False
+'    MLDSInfoLocation(0) = 3
+'    MLDSInfoLocation(1) = 3
+'    MLDSInfoLocation(2) = 3
+'    MLDSInfoLocation(4) = 3
+'    MLDSInfoLocation(5) = 3
+'    MLDSInfoLocation(6) = 3
+'    MLDSInfoLocation(7) = 3
+'    MLDSInfoLocation(8) = 3
+    DSNameLocation = 88 '1文字目が1の時のデータセットの名前の位置を記入
+    
+    strType = 0     '初期値
+    GYO = 2         '各シート「GYO」行目から書き込む
+    RETU = 1        '各シート「RETU」列に書き込むマクロ実行中に値の変動はない
+    
+    Set myFso = CreateObject("Scripting.FileSystemObject")
+    'ファイル名を指定する
+    Set myTxt = myFso.OpenTextFile(Filename:=ThisWorkbook.Path & _
+        "\" & InputTxt, IOMode:=ForReading)
+'   Set myTxt = myFso.GetFile(Filepath:=ThisWorkbook.Path & _
+        "\Q_Test.txt") .OpenAsTextStream(IOMode:=ForReading)
+2    With myTxt
+        Do Until .AtEndOfStream
+            myStr = .ReadLine
+'            Debug.Print myStr    'テキストを出力する
+'            Debug.Print check1    'デバッグ：はじめの1文字目をチェック
+            If MLEndFlag = False Then
+                If MLEndMessege = myStr Then
+                    MLEndFlag = True
+                    MLNameOutputFlag = False
+                Else
+                    If mySht.Name = copySht.Name Then
+                        Set mySht = CreateCopySheet1(MLSheetName, mySht, copySht)
+                        GYO = 2   'おそらく意味はない
+                    Else
+'                        If MLNameOutputFlag = True Then
+'                            MLDSInfo(0) = Mid(myStr, MLDSInfoLocation(0), 8)
+'                            MLDSInfo(1) = Mid(myStr, MLDSInfoLocation(1), 5)
+'                            MLDSInfo(2) = Mid(myStr, MLDSInfoLocation(2), 8)
+'                            MLDSInfo(3) = Mid(myStr, MLDSInfoLocation(3), 8)
+'                            MLDSInfo(4) = Mid(myStr, MLDSInfoLocation(4), 8)
+'                            MLDSInfo(5) = Mid(myStr, MLDSInfoLocation(5), 5)
+'                            MLDSInfo(6) = Mid(myStr, MLDSInfoLocation(6), 8)
+'                            MLDSInfo(7) = Mid(myStr, MLDSInfoLocation(7), 8)
+'                            MLDSInfo(8) = Mid(myStr, MLDSInfoLocation(8), 8)
+'                            mySht.Cells(GYO, RETU) = outputStr
+'                        Else
+'                            If MLNameInfoStartMessage = myStr Then
+'                                MLNameOutputFlag = True
+'                            End If
+'                        End If
+                    End If
+                End If
+                outputStr = myStr
+'                MLEndFlag = MLSheetCreate(mySht, copySht, myStr)
+            Else
+                check1 = Left(myStr, 1)
+                Select Case check1
+                    Case "0"
+'                        Debug.Print "OK:0"
+                        outputStr = myStr
+                    Case "1"
+'                        Debug.Print "OK:1"
+                        Set mySht = CreateCopySheet2(myStr, mySht, copySht, DSNameLocation)
+                        outputStr = myStr
+                        GYO = 2
+                    Case Else
+                    
+                        Select Case strType
+                            Case "1"
+                                Debug.Print "OK:1"
+                                
+                            Case "2"
+                                Debug.Print "OK:2"
+                                
+                            Case Else
+                                outputStr = myStr
+                        End Select
+                     End Select
+            End If
+            mySht.Cells(GYO, RETU) = outputStr
+            GYO = GYO + 1
+        Loop
+        .Close
+    End With
+    
+    Set myTxt = Nothing          'オブジェクトの解放
+    Set myFso = Nothing
+End Sub
+
+
+
+
+Sub add()
+    'Microsoft Scripting Runtime　参照設定
+    Dim myFso As Scripting.FileSystemObject
+    Dim myTxt As Scripting.TextStream
+    Dim InputTxt As String          'inputテキストファイル名
+    Dim myStr As String             '1行ずつテキストを読み込む。その1行を格納している
+    Dim outputStr As String
+    Dim strLength As Integer
+    Dim sheetTitle As String
+    Dim check1 As String
+    Dim strType As Integer          '読み込んだ文字列の初めの文字が0，1以外の時の分岐に使用　*現在未使用
+    Dim GYO As Integer             '書き込みを行う行 *基本固定
+    Dim RETU As Integer            '書き込みを行う列 *基本固定
+    Dim mySht As Worksheet         '書き込み実行中のシート
+    Dim copySht As Worksheet       'テンプレートシート
+    Dim MLEndMessege As String     'メンバーリストの終了メッセージ
+    Dim MLEndFlag As Boolean       'メンバーリストの終了判定　TRUE=終了
+    Dim MLSheetName As String       'メンバーリストのシート名を記載
+    Dim DSNameLocation As Integer    'DS名が出てくる位置までの文字数を格納
+    Dim searchSameSheet As Integer
+    Dim sameSheetNameCheck As String
+    Dim i As Integer
+    Dim sheetflug As Boolean
+    Dim listSheet As String
+    
+    Set mySht = Worksheets("テンプレート")
+    Set copySht = Worksheets("テンプレート")
+    InputTxt = "TEST.TXT"
+    MLEndMessege = "0 *** END OF MEMBER LISTING ***"
+    MLEndFlag = False 'メンバーリストがないテキストはTRUEに変更する
+    MLSheetName = "MEMBERLIST"  'メンバーリストシート名
+    DSNameLocation = 88
+    searchSameSheet = Worksheets("シート一覧").Cells(1, 6)
+    
+    strType = 0     '初期値 現在未使用
+    GYO = 2         '各シート「GYO」行目から書き込む
+    RETU = 5        '各シート「RETU」列に書き込むマクロ実行中に値の変動はない
+    
+    Set myFso = CreateObject("Scripting.FileSystemObject")
+    'ファイル名を指定する
+    Set myTxt = myFso.OpenTextFile(Filename:=ThisWorkbook.Path & _
+        "\" & InputTxt, IOMode:=ForReading)
+'   Set myTxt = myFso.GetFile(Filepath:=ThisWorkbook.Path & _
+        "\Q_Test.txt") .OpenAsTextStream(IOMode:=ForReading)
+2    With myTxt
+        Do Until .AtEndOfStream
+            myStr = .ReadLine
+'            Debug.Print myStr    'テキストを出力する
+'            Debug.Print check1    'デバッグ：はじめの1文字目をチェック
+            If MLEndFlag = False Then
+                If MLEndMessege = myStr Then
+                    MLEndFlag = True
+                Else
+                    If mySht.Name = copySht.Name Then
+                        Set mySht = Worksheets("MEMBERLIST")
+                        GYO = 2   'おそらく意味はない
+                    End If
+                End If
+                outputStr = myStr
+            Else
+                check1 = Left(myStr, 1)
+                Select Case check1
+                    Case "0"
+'                        Debug.Print "OK:0"
+                        outputStr = myStr
+                    Case "1"
+                        sameSheetNameCheck = Mid(myStr, 88, 8)
+                        For i = 2 To searchSameSheet + 1
+                            listSheet = Worksheets("シート一覧").Cells(i, 1)
+                            If listSheet = sameSheetNameCheck Then
+                                sheetflug = False
+                                Exit For
+                            End If
+                        Next i
+'                        Debug.Print "OK:1"
+                        If sheetflug = True Then
+                            Set mySht = CreateCopySheet2(myStr, mySht, copySht, DSNameLocation)
+                            outputStr = myStr
+                            GYO = 2
+                        Else
+                            Set mySht = Worksheets(sameSheetNameCheck)
+                            outputStr = myStr
+                            GYO = 2
+                        End If
+                    Case Else
+                    
+                        Select Case strType
+                            Case "1"
+                                Debug.Print "OK:1"
+                                
+                            Case "2"
+                                Debug.Print "OK:2"
+                                
+                            Case Else
+                                outputStr = myStr
+                        End Select
+                     End Select
+            End If
+            mySht.Cells(GYO, RETU) = outputStr
+            GYO = GYO + 1
+        Loop
+        .Close
+    End With
+    
+    Set myTxt = Nothing          'オブジェクトの解放
+    Set myFso = Nothing
+End Sub
+
+
+'シート一覧作成（1回目）
+Sub SheetNameList()
+    Dim WSCount As Integer
+    Dim i As Integer
+    Dim listSheet As Worksheet
+    
+    WSCount = Worksheets.Count
+    Set listSheet = Worksheets("シート一覧")
+    With listSheet
+    .Cells(1, 6) = Worksheets.Count
+        For i = 1 To WSCount
+'            If i <> WSCount Then
+'                .Range(Cells(i + 1, 1), Cells(i + 1, 4)).Copy .Range(Cells(i + 2, 1), Cells(i + 2, 4))
+'            End If
+            .Cells(i + 1, 1) = i
+            .Cells(i + 1, 2) = Worksheets(i).Name
+'            .Hyperlinks.add Anchor:=Cells(i + 3, 2), Address:=Worksheets(i).Range("A1")
+            .Hyperlinks.add Anchor:=Cells(i + 1, 2), _
+            Address:="", _
+            SubAddress:="'" & Worksheets(i).Name & "'" & "!a1", _
+            TextToDisplay:=.Cells(i + 1, 2).Value
+                        
+            .Cells(i + 1, 3) = Format(Date)
+            If .Cells(i + 1, 4) = "" Then
+                .Cells(i + 1, 4) = Format(Date)
+            End If
+        Next i
+    End With
+End Sub
+
+
+'シート一覧作成2回目
+Sub AddSheetNameList()
+    Dim WSCount As Integer
+    Dim WSCountBefore As Integer
+    Dim i As Integer
+    Dim j As Integer
+    Dim listSheet As Worksheet
+    Dim SearchListName() As String
+    Dim SearchListUpdate() As Date
+    Dim SearchListCreate() As Date
+    Dim flag As Boolean
+    Set listSheet = Worksheets("シート一覧")
+    flag = False
+    With listSheet
+        WSCountBefore = .Cells(1, 6)
+        WSCount = Worksheets.Count
+        ReDim SearchListName(WSCountBefore)
+        ReDim SearchListUpdate(WSCountBefore)
+        ReDim SearchListCreate(WSCountBefore)
+        
+        For i = 0 To WSCountBefore - 1
+            SearchListName(i) = .Cells(i + 2, 2)
+            SearchListUpdate(i) = .Cells(i + 2, 3)
+            SearchListCreate(i) = .Cells(i + 2, 4)
+        Next
+'    For i = 0 To WSCountBefore - 1
+'        Debug.Print SearchList(i)
+'    Next i
+         For i = 1 To WSCount
+            For j = 1 To WSCountBefore
+                If SearchListName(i - 1) = Worksheets(j).Name Then
+                    .Cells(i + 1, 2) = SearchListName(j)
+                    .Cells(i + 1, 3) = Format(Date)
+                    .Cells(i + 1, 4) = SearchListCreate(j)
+                    flag = True
+                    Exit For
+                End If
+            Next j
+    '            If i <> WSCount Then
+    '                .Range(Cells(i + 1, 1), Cells(i + 1, 4)).Copy .Range(Cells(i + 2, 1), Cells(i + 2, 4))
+    '            End If
+            .Cells(i + 1, 1) = i
+            If flag = False Then
+                .Cells(i + 1, 2) = Worksheets(i).Name
+                .Hyperlinks.add Anchor:=Cells(i + 1, 2), _
+                Address:="", _
+                SubAddress:="'" & Worksheets(i).Name & "'" & "!a1", _
+                TextToDisplay:=.Cells(i + 1, 2).Value
+                .Cells(i + 1, 3) = Format(Date)
+                If .Cells(i + 1, 4) = "" Then
+                    .Cells(i + 1, 4) = Format(Date)
+                End If
+            End If
+         Next i
+    End With
+End Sub
+
+
+Sub Q_add()
+    'Microsoft Scripting Runtime　参照設定
+    Dim myFso As Scripting.FileSystemObject
+    Dim myTxt As Scripting.TextStream
+    Dim myStr As String
+    Dim outputStr As String
+    Dim strLength As Integer
+    Dim sheetTitle As String
+    Dim check1 As String
+    Dim check2 As String
+    Dim check3 As String
+    Dim check4 As String
+    Dim WS As Worksheet
+    Dim flag As Boolean
+    Dim strType As Integer
+    Dim GYO As Integer
+    Dim RETU As Integer
+    Dim mySht As Worksheet
+    Dim copySht As Worksheet
+    
+    Set copySht = Worksheets("テンプレート")
+    Set mySht = Worksheets("テンプレート")
+    strType = 0     '初期値
+    GYO = 2
+    RETU = 5
+    
+    Set myFso = CreateObject("Scripting.FileSystemObject")
+    'ファイル名を指定する
+    Set myTxt = myFso.OpenTextFile(Filename:=ThisWorkbook.Path & _
+        "\TEST.txt", IOMode:=ForReading)
+'   Set myTxt = myFso.GetFile(Filepath:=ThisWorkbook.Path & _
+        "\Q_Test.txt") .OpenAsTextStream(IOMode:=ForReading)
+    With myTxt
+        Do Until .AtEndOfStream
+            myStr = .ReadLine
+            Debug.Print myStr    'テキストを出力する
+            check1 = Left(myStr, 1)
+            Debug.Print check1    'デバッグ：はじめの1文字目をチェック
+            Select Case check1
+                Case "0"
+                    Debug.Print "OK:0"
+                    outputStr = myStr
+                Case "1"
+                    Debug.Print "OK:1"
+                    strLength = Len(myStr)
+                    outputStr = Right(myStr, strLength - 6)
+                    sheetTitle = Mid(myStr, 6, 4)
+'シートが存在するか調べる
+                    flag = False
+                    For Each WS In Worksheets
+                        If WS.Name = sheetTitle Then
+                            flag = True
+                        End If
+                    Next WS
+                    If flag = True Then
+                        Set mySht = Worksheets(sheetTitle)
+                    Else
+                        copySht.Copy After:=mySht
+                        Set mySht = ActiveSheet
+                        mySht.Name = sheetTitle
+                    End If
+                    GYO = 2
+                Case Else
+                
+                Select Case strType
+                    Case "1"
+                        Debug.Print "OK:1"
+                        
+                    Case "2"
+                        Debug.Print "OK:2"
+                        
+                    Case Else
+                        outputStr = myStr
+                End Select
+                
+            End Select
+            mySht.Cells(GYO, RETU) = outputStr
+            GYO = GYO + 1
+            
+        Loop
+        .Close
+    End With
+    
+    Set myTxt = Nothing          'オブジェクトの解放
+    Set myFso = Nothing
+End Sub
+
+
+Function CreateCopySheet1(inputStr As String, actSht As Worksheet, copySht As Worksheet) As Worksheet
+    copySht.Copy After:=actSht
+    Set CreateCopySheet1 = ActiveSheet
+    CreateCopySheet1.Name = inputStr
+End Function
+
+
+
+
+Function CreateCopySheet2(inputStr As String, actSht As Worksheet, copySht As Worksheet, loc As Integer) As Worksheet
+    Dim sheetTitle As String
+    sheetTitle = Mid(inputStr, loc, 8)
+    copySht.Copy After:=actSht
+    Set CreateCopySheet2 = ActiveSheet
+    CreateCopySheet2.Name = sheetTitle
+End Function
+
+Function addSheet(inputStr As String, actSht As Worksheet, copySht As Worksheet, loc As Integer) As Worksheet
+    Dim sheetTitle As String
+    sheetTitle = Mid(inputStr, loc, 8)
+    copySht.Copy After:=actSht
+    Set CreateCopySheet2 = ActiveSheet
+    CreateCopySheet2.Name = sheetTitle
+End Function
+
+
+
+Function MLSheetCreate(mysheet As Worksheet, copySheet As Worksheet, MLMyStr As String, MLOutputStr As String) As Boolean
+    MLNameInfoStartMessage As String
+    MLSheetName As String
+    MLNameInfoStartMessage = "  MEMBER NAME     MODIFICATION   CREATED   LAST UPDATED   TOTAL   LINESTOATAL"
+    MLSheetName = "MEMBERLIST"  'メンバーリストシート名
+    
+    If MLEndMessege = MLMyStr Then
+        MLEndFlag = True
+    Else
+        If mySht.Name = copySht.Name Then
+            Set mySht = CreateCopySheet1(MLSheetName, mySht, copySht)
+            GYO = 2   'おそらく意味はない
+        Else
+            If MLNameInfoStartMessage = MLMyStr Then
+            End If
+        End If
+    End If
+    MLOutputStr = MLMyStr
+End Function
+
+
+Sub compare()
+    Dim rng1 As Range
+    Dim rng2 As Range
+    Dim lastRngRow As Integer
+    Dim i As Integer
+    Dim j As Integer
+    
+    For i = 2 To Worksheets.Count
+        lastRngRow = 最終セル探索(Worksheets(i))
+        With Worksheets(i)
+            For j = 2 To lastRngRow
+                Set rng1 = .Cells(j, 1)
+                Set rng2 = .Cells(j, 5)
+'                rng1.Select
+'                rng2.Select
+                If (rng1.Value = rng2.Value) Then
+                    .Cells(j, 3) = ""
+                    .Cells(j, 3).Interior.ColorIndex = 0
+                Else
+                    .Cells(j, 3) = "変更"
+                    .Cells(j, 3).Interior.ColorIndex = 6
+
+                End If
+            Next j
+        End With
+    Next i
+End Sub
+
+Function 最終セル探索(mysheet As Worksheet) As Integer
+    Dim myRng1 As Range
+    Dim myRng2 As Range
+    Dim comp1 As Integer
+    Dim comp2 As Integer
+
+    With mysheet
+        Set myRng1 = .Cells(Rows.Count, 1) '下端のセルを取得
+        With myRng1
+            If Len(.PrefixCharacter & .Formula) > 0 Then
+                Set myRng2 = myRng1 '下端のセルが該当する場合
+            Else
+            With .End(xlUp)
+                If Len(.PrefixCharacter & .Formula) > 0 Then
+                    Set myRng2 = .Cells(1)
+                End If
+            End With
+            End If
+
+            If myRng2 Is Nothing Then
+                MsgBox "何も入力されていません。"
+            Else
+'            mysheet.myRng2.Select '確認用
+                ' MsgBox myRng2.Address
+                
+                comp1 = myRng2.Row
+            End If
+        End With
+        Set myRng1 = .Cells(Rows.Count, 5) '下端のセルを取得
+        With myRng1
+            If Len(.PrefixCharacter & .Formula) > 0 Then
+                Set myRng2 = myRng1 '下端のセルが該当する場合
+            Else
+            With .End(xlUp)
+                If Len(.PrefixCharacter & .Formula) > 0 Then
+                    Set myRng2 = .Cells(1)
+                End If
+            End With
+            End If
+
+            If myRng2 Is Nothing Then
+                MsgBox "何も入力されていません。"
+            Else
+'            mysheet.myRng2.Select '確認用
+                ' MsgBox myRng2.Address
+                
+                comp2 = myRng2.Row
+            End If
+            Set myRng1 = Nothing 'オブジェクトの解放
+            Set myRng2 = Nothing
+            If comp1 < comp2 Then
+                最終セル探索 = comp2
+            Else
+                最終セル探索 = comp1
+            End If
+        End With
+    End With
+End Function

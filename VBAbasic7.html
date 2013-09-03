@@ -1,0 +1,67 @@
+Sub sheetLISTCreate()
+    Dim mainsht As Worksheet
+    Dim createSht As Worksheet
+    Dim GYO As Integer
+    Dim i As Integer
+    Dim j As Integer
+    Dim MLEndMessege As String      'メンバーリストの終了メッセージ
+    Dim MLEndFlag As Boolean        'メンバーリストの終了判定　TRUE=終了
+    Dim MLSheetName As String       'メンバーリストのシート名を記載
+    Dim MLNameInfoStartMessage As String    'メンバーリストの名前一覧が出力される一行前の文字列を格納
+    Dim MLNameOutputFlag As Boolean        'メンバーリスト名前一覧を出力するフラグ
+    Dim MLDSInfoLocation(9) As Integer    'メンバーリスト内の情報が出てくる位置までの文字数を格納
+    Dim MLDSInfo(9) As String       'メンバーリスト内のDS情報を格納する
+    Dim MLDSInfoStrLength(9) As String       'メンバーリスト内のDS情報文字数を格納する
+    Dim myStr As String
+    
+    MLSheetName = "MEMBERLIST"  'メンバーリストシート名
+    Set mainsht = Worksheets(MLSheetName)
+    Set createSht = Worksheets("シート一覧")
+    GYO = 1
+    MLNameInfoStartMessage = "  MEMBER NAME     MODIFICATION   CREATED   LAST UPDATED   TOTAL   LINESTOATAL"
+    MLEndMessege = "0 *** END OF MEMBER LISTING ***"
+    MLEndFlag = False 'メンバーリストがないテキストはTRUEに変更する
+    MLNameOutputFlag = False
+    MLDSInfoLocation(0) = 3
+    MLDSInfoLocation(1) = 18
+    MLDSInfoLocation(2) = 33
+    MLDSInfoLocation(3) = 43
+    MLDSInfoLocation(4) = 53
+    MLDSInfoLocation(5) = 63
+    MLDSInfoLocation(6) = 63
+    MLDSInfoLocation(7) = 63
+    MLDSInfoLocation(8) = 63
+    MLDSInfoStrLength(0) = 8
+    MLDSInfoStrLength(1) = 5
+    MLDSInfoStrLength(2) = 8
+    MLDSInfoStrLength(3) = 8
+    MLDSInfoStrLength(4) = 8
+    MLDSInfoStrLength(5) = 5
+    MLDSInfoStrLength(6) = 8
+    MLDSInfoStrLength(7) = 8
+    MLDSInfoStrLength(8) = 8
+    j = 1
+    myStr = mainsht.Cells(j, 1)
+    
+    Do While MLEndMessege <> myStr
+        If MLNameOutputFlag = True Then
+            If 1 = Left(myStr, 1) Then
+                MLNameOutputFlag = False
+            Else
+                If myStr <> "" Then
+                    GYO = GYO + 1
+                    For i = 0 To 8
+                        MLDSInfo(i) = Mid(myStr, MLDSInfoLocation(i), MLDSInfoStrLength(i))
+                        createSht.Cells(GYO, i + 1) = MLDSInfo(i)
+                    Next i
+                End If
+            End If
+        Else
+            If MLNameInfoStartMessage = myStr Then
+                MLNameOutputFlag = True
+            End If
+        End If
+        j = j + 1
+        myStr = mainsht.Cells(j, 1)
+    Loop
+End Sub
