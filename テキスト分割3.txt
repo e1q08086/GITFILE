@@ -1,0 +1,84 @@
+﻿Option Explicit
+Sub textFileCreate()
+    Dim myStr As String             '1行ずつテキストを読み込む。その1行を格納している
+    Dim outputStr As String
+    Dim strLength As Integer
+    Dim sheetTitle As String
+    Dim check1 As String
+    Dim AllGYO As Integer
+    Dim memberListSht As Worksheet          '書き込み実行中のシート
+    Dim memberSht As Worksheet        'テンプレートシート
+    Dim i As Long
+    Dim j As Integer
+    Dim h As Integer
+    Dim CreateMemberName() As String
+    Dim SearchWord As String
+    Dim StrFN As String
+    Dim LngLoop As Long
+    Dim IntFlNo As Integer
+    Dim CreateMemberFlagStr As String
+    Dim strFlag As String
+    Dim fileOpenFlag As Boolean
+    
+    Set memberListSht = Worksheets("シート一覧")
+    Set memberSht = Worksheets("ALLMEMBER")
+    j = 0
+    CreateMemberFlagStr = "PAGE  :  002  "
+    
+    
+    With memberListSht
+        AllGYO = .Cells(1, 7)
+        ReDim CreateMemberName(AllGYO)
+        For i = 2 To AllGYO
+            SearchWord = .Cells(i, 1)
+            If SearchWord = "作成する" Then
+                CreateMemberName(j) = .Cells(i, 2)
+                j = j + 1
+            End If
+        Next i
+    End With
+    
+    With memberSht
+        AllGYO = .Cells(1, 4)
+
+        For i = 1 To AllGYO
+            myStr = .Cells(i, 1)
+            check1 = Left(myStr, 1)
+            Select Case check1
+            Case "0"
+
+            Case "1"
+                strFlag = Mid(myStr, 74, 22)
+                Debug.Print strFlag
+                Debug.Print CreateMemberFlagStr & CreateMemberName(h)
+                If strFlag = CreateMemberFlagStr & CreateMemberName(h) Then
+                    If fileOpenFlag = True Then
+                        fileOpenFlag = False
+                        Close #IntFlNo
+                    End If
+'                        Debug.Print "OK:1"
+                    fileOpenFlag = True
+                    StrFN = ActiveWorkbook.Path & "\" & CreateMemberName(h) & ".txt"
+                    IntFlNo = FreeFile
+                    Open StrFN For Output As #IntFlNo
+                    h = h + 1
+                    Print #IntFlNo, myStr
+                Else
+                    If fileOpenFlag = True Then
+                        fileOpenFlag = False
+                        Close #IntFlNo
+                    End If
+                End If
+            Case Else
+            If fileOpenFlag = True Then
+                    Print #IntFlNo, .Cells(i, 1)
+            End If
+            End Select
+        Next i
+        If fileOpenFlag = True Then
+            fileOpenFlag = False
+            Close #IntFlNo
+        End If
+    End With
+    MsgBox "作成終了"
+End Sub

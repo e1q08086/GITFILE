@@ -1,0 +1,248 @@
+﻿Option Explicit
+Sub TextBunkatu(InputTxt As String)
+    'Microsoft Scripting Runtime　参照設定
+    Dim myFso As Scripting.FileSystemObject
+    Dim myTxt As Scripting.TextStream
+'    Dim InputTxt As String          'inputテキストファイル名
+    Dim myStr As String             '1行ずつテキストを読み込む。その1行を格納している
+    Dim outputStr As String
+    Dim strLength As Integer
+    Dim sheetTitle As String
+    Dim check1 As String
+    Dim strType As Integer          '読み込んだ文字列の初めの文字が0，1以外の時の分岐に使用　*現在未使用
+    Dim GYO As Integer              '書き込みを行う行 *基本固定
+    Dim RETU As Integer             '書き込みを行う列 *基本固定
+    Dim mySht As Worksheet          '書き込み実行中のシート
+    Dim copySht As Worksheet        'テンプレートシート
+    Dim MLEndMessege As String      'メンバーリストの終了メッセージ
+    Dim MLEndFlag As Boolean        'メンバーリストの終了判定　TRUE=終了
+    Dim MLSheetName As String       'メンバーリストのシート名を記載
+    Dim MLSheetName2 As String       'メンバーリスト以外の内容を出力するシート名を記載
+    Dim MLNameInfoStartMessage As String    'メンバーリストの名前一覧が出力される一行前の文字列を格納
+    Dim MLNameOutputFlag As Boolean        'メンバーリスト名前一覧を出力するフラグ
+    Dim MLDSInfoLocation(9) As Integer    'メンバーリスト内の情報が出てくる位置までの文字数を格納
+    Dim MLDSInfo(9) As String       'メンバーリスト内のDS情報を格納する
+    Dim DSNameLocation As Integer    'DS名が出てくる位置までの文字数を格納
+    Dim firstFlag As Boolean
+    
+    
+    Set mySht = Worksheets("テンプレート")
+    Set copySht = Worksheets("テンプレート")
+'    InputTxt = "TEST.TXT"
+    
+    MLEndMessege = "0 *** END OF MEMBER LISTING ***"
+    MLEndFlag = False 'メンバーリストがないテキストはTRUEに変更する
+    MLSheetName = "MEMBERLIST"  'メンバーリストシート名
+    MLSheetName2 = "ALLMEMBER"  'メンバーリストシート名
+    MLNameInfoStartMessage = "  MEMBER NAME     MODIFICATION   CREATED   LAST UPDATED   TOTAL   LINESTOATAL"
+    MLNameOutputFlag = False
+    
+    firstFlag = True
+    DSNameLocation = 88 '1文字目が1の時のデータセットの名前の位置を記入
+    
+    strType = 0     '初期値
+    GYO = 2         '各シート「GYO」行目から書き込む
+    RETU = 1        '各シート「RETU」列に書き込むマクロ実行中に値の変動はない
+    
+    Set myFso = CreateObject("Scripting.FileSystemObject")
+    'ファイル名を指定する
+    Set myTxt = myFso.OpenTextFile(Filename:=InputTxt, IOMode:=ForReading)
+'   Set myTxt = myFso.GetFile(Filepath:=ThisWorkbook.Path & _
+        "\Q_Test.txt") .OpenAsTextStream(IOMode:=ForReading)
+    With myTxt
+        Do Until .AtEndOfStream
+            myStr = .ReadLine
+'            Debug.Print myStr    'テキストを出力する
+'            Debug.Print check1    'デバッグ：はじめの1文字目をチェック
+            If MLEndFlag = False Then
+                If MLEndMessege = myStr Then
+                    MLEndFlag = True
+                    MLNameOutputFlag = False
+                Else
+                    If mySht.Name = copySht.Name Then
+                        Set mySht = CreateCopySheet1(MLSheetName, mySht, copySht)
+                        GYO = 2   'おそらく意味はない
+                    Else
+                    End If
+                End If
+                outputStr = myStr
+            Else
+                If firstFlag = True Then
+                    Set mySht = CreateCopySheet1(MLSheetName2, mySht, copySht)
+                    GYO = 2   'おそらく意味はない
+                    firstFlag = False
+                End If
+                outputStr = myStr
+            End If
+            mySht.Cells(GYO, RETU) = outputStr
+            GYO = GYO + 1
+        Loop
+        .Close
+    End With
+    Set myTxt = Nothing          'オブジェクトの解放
+    Set myFso = Nothing
+    Call sheetLISTCreate
+End Sub
+
+
+Sub prcApplicationGetOpenFilename()
+
+    Dim vntFileName As Variant
+
+    'ファイルを開くダイアログを開きます
+    vntFileName = _
+        Application.GetOpenFilename( _
+             FileFilter:="テキストファイル (*.txt),*.txt" _
+           , FilterIndex:=1 _
+           , Title:="PFD3.1でインポートしたテキストを選択してください" _
+           , MultiSelect:=False _
+            )
+
+    'ファイルが選択されているときは
+    '選択したファイルをWorkbooks.Openメソッドで開きます
+    If vntFileName <> False Then
+'       Workbooks.Open Filename:=vntFileName
+        TextBunkatu (vntFileName)
+        Worksheets("シート一覧").Select
+    End If
+End Sub
+
+
+
+
+
+
+Function CreateCopySheet1(inputStr As String, actSht As Worksheet, copySht As Worksheet) As Worksheet
+    copySht.Copy After:=actSht
+    Set CreateCopySheet1 = ActiveSheet
+    CreateCopySheet1.Name = inputStr
+End Function
+
+
+
+
+Function CreateCopySheet2(inputStr As String, actSht As Worksheet, copySht As Worksheet, loc As Integer) As Worksheet
+    Dim sheetTitle As String
+    sheetTitle = Mid(inputStr, loc, 8)
+    copySht.Copy After:=actSht
+    Set CreateCopySheet2 = ActiveSheet
+    CreateCopySheet2.Name = sheetTitle
+End Function
+
+Function addSheet(inputStr As String, actSht As Worksheet, copySht As Worksheet, loc As Integer) As Worksheet
+    Dim sheetTitle As String
+    sheetTitle = Mid(inputStr, loc, 8)
+    copySht.Copy After:=actSht
+    Set CreateCopySheet2 = ActiveSheet
+    CreateCopySheet2.Name = sheetTitle
+End Function
+
+
+
+Function MLSheetCreate(mysheet As Worksheet, copySheet As Worksheet, MLMyStr As String, MLOutputStr As String) As Boolean
+    MLNameInfoStartMessage As String
+    MLSheetName As String
+    MLNameInfoStartMessage = "  MEMBER NAME     MODIFICATION   CREATED   LAST UPDATED   TOTAL   LINESTOATAL"
+    MLSheetName = "MEMBERLIST"  'メンバーリストシート名
+    
+    If MLEndMessege = MLMyStr Then
+        MLEndFlag = True
+    Else
+        If mySht.Name = copySht.Name Then
+            Set mySht = CreateCopySheet1(MLSheetName, mySht, copySht)
+            GYO = 2   'おそらく意味はない
+        Else
+            If MLNameInfoStartMessage = MLMyStr Then
+            End If
+        End If
+    End If
+    MLOutputStr = MLMyStr
+End Function
+
+
+Sub compare()
+    Dim rng1 As Range
+    Dim rng2 As Range
+    Dim lastRngRow As Integer
+    Dim i As Integer
+    Dim j As Integer
+    
+    For i = 2 To Worksheets.Count
+        lastRngRow = 最終セル探索(Worksheets(i))
+        With Worksheets(i)
+            For j = 2 To lastRngRow
+                Set rng1 = .Cells(j, 1)
+                Set rng2 = .Cells(j, 5)
+'                rng1.Select
+'                rng2.Select
+                If (rng1.Value = rng2.Value) Then
+                    .Cells(j, 3) = ""
+                    .Cells(j, 3).Interior.ColorIndex = 0
+                Else
+                    .Cells(j, 3) = "変更"
+                    .Cells(j, 3).Interior.ColorIndex = 6
+
+                End If
+            Next j
+        End With
+    Next i
+End Sub
+
+Function 最終セル探索(mysheet As Worksheet) As Integer
+    Dim myRng1 As Range
+    Dim myRng2 As Range
+    Dim comp1 As Integer
+    Dim comp2 As Integer
+
+    With mysheet
+        Set myRng1 = .Cells(Rows.Count, 1) '下端のセルを取得
+        With myRng1
+            If Len(.PrefixCharacter & .Formula) > 0 Then
+                Set myRng2 = myRng1 '下端のセルが該当する場合
+            Else
+            With .End(xlUp)
+                If Len(.PrefixCharacter & .Formula) > 0 Then
+                    Set myRng2 = .Cells(1)
+                End If
+            End With
+            End If
+
+            If myRng2 Is Nothing Then
+                MsgBox "何も入力されていません。"
+            Else
+'            mysheet.myRng2.Select '確認用
+                ' MsgBox myRng2.Address
+                
+                comp1 = myRng2.Row
+            End If
+        End With
+        Set myRng1 = .Cells(Rows.Count, 5) '下端のセルを取得
+        With myRng1
+            If Len(.PrefixCharacter & .Formula) > 0 Then
+                Set myRng2 = myRng1 '下端のセルが該当する場合
+            Else
+            With .End(xlUp)
+                If Len(.PrefixCharacter & .Formula) > 0 Then
+                    Set myRng2 = .Cells(1)
+                End If
+            End With
+            End If
+
+            If myRng2 Is Nothing Then
+                MsgBox "何も入力されていません。"
+            Else
+'            mysheet.myRng2.Select '確認用
+                ' MsgBox myRng2.Address
+                
+                comp2 = myRng2.Row
+            End If
+            Set myRng1 = Nothing 'オブジェクトの解放
+            Set myRng2 = Nothing
+            If comp1 < comp2 Then
+                最終セル探索 = comp2
+            Else
+                最終セル探索 = comp1
+            End If
+        End With
+    End With
+End Function
