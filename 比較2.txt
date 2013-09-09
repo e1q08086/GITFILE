@@ -1,0 +1,137 @@
+﻿Option Explicit
+
+' テキストファイル読み込みサンプル3(FSO)
+' 参照設定：Microsoft Scripting Runtime
+Sub compareSheetCreate()
+    ' 読み込むファイル名(固定)
+    Dim cnsFILENAME As String
+    Dim FSO As New FileSystemObject ' FileSystemObject
+    Dim TS As TextStream            ' TextStream
+    Dim strREC As String            ' 読み込んだレコード内容
+    Dim GYO As Long                 ' 収容するセルの行
+    Dim i As Long
+    Dim folderName As String
+    Dim folderName2 As String
+    Dim fileName As String
+    Dim sheetName As String
+    Dim fileIndexSht As Worksheet
+    Dim compareTempleteSht As Worksheet
+    Dim compareSht As Worksheet
+    Dim lastGYO As Long
+    Set fileIndexSht = Worksheets("テキストファイル一覧")
+    Set compareTempleteSht = Worksheets("比較シートテンプレート")
+    
+    With fileIndexSht
+        lastGYO = 最終セル探索(fileIndexSht)
+        folderName = .Cells(2, 1)
+        folderName2 = .Cells(2, 3)
+        For i = 3 To lastGYO
+            fileName = .Cells(i, 1)
+            If fileName <> "" Then
+                cnsFILENAME = folderName & .Cells(i, 1)
+                sheetName = Left(fileName, Len(fileName) - 4)
+                Set compareSht = CreateCopySheet1(sheetName, fileIndexSht, compareTempleteSht)
+                Call READ_TextFile3(compareSht, cnsFILENAME, 1)
+                
+                fileName = .Cells(i, 3)
+                cnsFILENAME = folderName2 & .Cells(i, 3)
+                sheetName = Left(fileName, Len(fileName) - 4)
+                Call READ_TextFile3(compareSht, cnsFILENAME, 3)
+            End If
+        Next i
+    End With
+End Sub
+
+
+Function CreateCopySheet1(inputStr As String, actSht As Worksheet, copySht As Worksheet) As Worksheet
+    copySht.Copy after:=actSht
+    Set CreateCopySheet1 = ActiveSheet
+    CreateCopySheet1.Name = inputStr
+End Function
+
+
+Sub READ_TextFile3(actSheet As Worksheet, readFilePath As String, actRETU As Integer)
+    ' 読み込むファイル名(固定)
+    Dim FSO As New FileSystemObject ' FileSystemObject
+    Dim TS As TextStream            ' TextStream
+    Dim strREC As String            ' 読み込んだレコード内容
+    Dim GYO As Long                 ' 収容するセルの行
+    
+    With actSheet
+        ' 指定ファイルをOPEN(入力モード)
+        Set TS = FSO.OpenTextFile(readFilePath, ForReading)
+        GYO = 2
+        ' ファイルのEOF(End of File)まで繰り返す
+        Do Until TS.AtEndOfStream
+            ' 改行までをレコードとして読み込む
+            strREC = TS.ReadLine
+            ' 行を加算しA列にレコード内容を表示(先頭は2行目)
+            GYO = GYO + 1
+            actSheet.Cells(GYO, actRETU).Value = strREC
+        Loop
+        ' 指定ファイルをCLOSE
+        TS.Close
+        Set TS = Nothing
+        Set FSO = Nothing
+    End With
+End Sub
+
+Function 最終セル探索(mysheet As Worksheet) As Integer
+    Dim myRng1 As Range
+    Dim myRng2 As Range
+    Dim comp1 As Long
+    Dim comp2 As Long
+
+    With mysheet
+        Set myRng1 = .Cells(Rows.Count, 1) '下端のセルを取得
+        With myRng1
+            If Len(.PrefixCharacter & .Formula) > 0 Then
+                Set myRng2 = myRng1 '下端のセルが該当する場合
+            Else
+            With .End(xlUp)
+                If Len(.PrefixCharacter & .Formula) > 0 Then
+                    Set myRng2 = .Cells(1)
+                End If
+            End With
+            End If
+
+            If myRng2 Is Nothing Then
+                MsgBox "何も入力されていません。"
+            Else
+'            mysheet.myRng2.Select '確認用
+                ' MsgBox myRng2.Address
+                
+                comp1 = myRng2.Row
+            End If
+        End With
+        Set myRng1 = .Cells(Rows.Count, 5) '下端のセルを取得
+        With myRng1
+            If Len(.PrefixCharacter & .Formula) > 0 Then
+                Set myRng2 = myRng1 '下端のセルが該当する場合
+            Else
+            With .End(xlUp)
+                If Len(.PrefixCharacter & .Formula) > 0 Then
+                    Set myRng2 = .Cells(1)
+                End If
+            End With
+            End If
+
+            If myRng2 Is Nothing Then
+                MsgBox "何も入力されていません。"
+            Else
+'            mysheet.myRng2.Select '確認用
+                ' MsgBox myRng2.Address
+                
+                comp2 = myRng2.Row
+            End If
+            Set myRng1 = Nothing 'オブジェクトの解放
+            Set myRng2 = Nothing
+            If comp1 < comp2 Then
+                最終セル探索 = comp2
+            Else
+                最終セル探索 = comp1
+            End If
+        End With
+    End With
+End Function
+

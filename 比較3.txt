@@ -1,0 +1,44 @@
+﻿'シートソートマクロ
+Sub SortSheets()
+  Dim intLoopA As Integer
+  Dim intLoopB As Integer
+
+  For intLoopA = 3 To Sheets.Count
+    For intLoopB = 3 To Sheets.Count - 1
+      If Sheets(intLoopB).Name > Sheets(intLoopB + 1).Name Then
+        Sheets(intLoopB).Move after:=Sheets(intLoopB + 1)
+      End If
+    Next intLoopB
+  Next intLoopA
+
+End Sub
+
+
+'コンペア
+Sub compare()
+    Dim rng1 As Range
+    Dim rng2 As Range
+    Dim lastRngRow As Integer
+    Dim i As Integer
+    Dim j As Integer
+    
+    For i = 3 To Worksheets.Count
+        lastRngRow = 最終セル探索(Worksheets(i))
+        With Worksheets(i)
+            For j = 2 To lastRngRow
+                Set rng1 = .Cells(j, 1)
+                Set rng2 = .Cells(j, 3)
+'                rng1.Select
+'                rng2.Select
+                If (rng1.Value = rng2.Value) Then
+                    .Cells(j, 2) = ""
+                    .Cells(j, 2).Interior.ColorIndex = 0
+                Else
+                    .Cells(j, 2) = "変更"
+                    .Cells(j, 2).Interior.ColorIndex = 6
+                    .Tab.ColorIndex = 6
+                End If
+            Next j
+        End With
+    Next i
+End Sub

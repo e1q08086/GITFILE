@@ -1,0 +1,41 @@
+﻿Sub Main()
+    MsgBox "比較の基準となるテキストファイルが入っているフォルダを指定してください。"
+    getFileName (1)
+    MsgBox "比較するテキストファイルが入っているフォルダを指定してください。"
+    getFileName (3)
+    MsgBox "同じ行のファイルが比較されます。比較しないものがあればA列のファイル名を削除してください。また、比較対象が間違っている場合ば対応するように修正してください。"
+End Sub
+
+
+Sub getFileName(num As Integer)
+    Dim buf As String
+    Dim cnt As Long
+    Dim Path As String
+    Dim fileIndexSht As Worksheet
+    Set fileIndexSht = Worksheets("テキストファイル一覧")
+    Path = selectFolderDialog() & "\"
+    cnt = 2
+    With fileIndexSht
+        .Cells(2, num) = "比較テキスト名" & num
+        .Cells(2, num) = Path
+'        buf = Dir(Path & "*.txt")
+        buf = Dir(Path & "*.txt")
+        Do While buf <> ""
+            cnt = cnt + 1
+            .Cells(cnt, num) = buf
+            If num = 1 Then
+                .Cells(cnt, num + 1) = "→"
+            End If
+            buf = Dir()
+        Loop
+    End With
+End Sub
+
+Function selectFolderDialog() As String
+    With Application.FileDialog(msoFileDialogFolderPicker)
+        If .Show = True Then
+'            MsgBox .SelectedItems(1)
+            selectFolderDialog = .SelectedItems(1)
+        End If
+    End With
+End Function
