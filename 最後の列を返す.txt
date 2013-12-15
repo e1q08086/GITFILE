@@ -1,0 +1,66 @@
+﻿' サンプルコード　指定した列の一番下のセルを取得
+' Module1
+Option Explicit
+Sub GetbottomCell()
+    Dim myRng1 As Range
+    Dim myRng2 As Range
+    Set mRng1 = Cells(Rows.Count, 2)    '下端のセルを取得
+    myRng1.Select
+    With myRng1
+        If Len(.PrefixCharacter & .Formula) > 0 Then
+            Set myRng2 = myRng1    '下端のセルが該当する場合
+        Else
+            With .End(xlUp)
+                If Len(.PrefixCharacter & .Formula) > 0 Then
+                    Set myRng2 = .Cells(1)
+                End If
+            End With
+        End If
+    End With
+    If myRng2 Is Nothing Then
+        MsgBox "何も入力されていません。"
+    Else
+        myRng2.Select '確認用
+        MsgBox myRng2.Address
+    End If
+    Set myRng1 = Nothing    'オブジェクトの解放
+    Set myRng2 = Nothing
+End Sub
+' **********************************************************************
+' **********************************************************************
+Function GetbottomCell1(searchRng As Range) As Range
+    Dim myRng1 As Range
+    Dim searchColumn As Integer
+    searchColumn = searchRng.Column
+    Set myRng1 = Cells(Rows.Count, searchColumn)    '下端のセルを取得
+    myRng1.Select
+    With myRng1
+        If Len(.PrefixCharacter & .Formula) > 0 Then
+            Set GetbottomCell1 = myRng1    '下端のセルが該当する場合
+        Else
+            With .End(xlUp)
+                If Len(.PrefixCharacter & .Formula) > 0 Then
+                    Set GetbottomCell1 = .Cells(1)
+                End If
+            End With
+        End If
+    End With
+    If GetbottomCell1 Is Nothing Then
+        MsgBox "何も入力されていません。"
+    Else
+'        GetbottomCell1.Select '確認用
+'        MsgBox GetbottomCell1.Address
+    End If
+    Set myRng1 = Nothing    'オブジェクトの解放
+End Function
+' **********************************************************************
+'Function起動確認用マクロ
+' **********************************************************************
+Sub test1()
+    Dim testRange As Range
+    Dim testRange2 As Range
+    Set testRange = Range("B1:B12")
+'    testRange.Select
+    Set testRange2 = GetbottomCell1(testRange)
+    testRange2.Select
+End Sub
