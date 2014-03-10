@@ -1,0 +1,112 @@
+﻿'********************************************************
+'*                セル範囲の比較マクロVer               *
+'********************************************************
+
+Sub CompaireMacroMain()
+'
+' CompaireMacroMain Macro
+'
+' Keyboard Shortcut: Ctrl+q
+'
+    Dim i As Long
+    Dim j As Long
+    Dim str1H() As String
+    Dim str2H() As String
+    Dim LoopArea1 As Range
+    Dim LoopArea2 As Range
+    Dim str1Length As Integer
+    Dim str2Length As Integer
+    Dim minStrLength As String
+    Dim maxStrLength As String
+    Dim rng1Row As Long
+    Dim rng1Column As Long
+    Dim rng1LastRow As Long
+    Dim rng1LastColumn As Long
+    Dim rng1RowRange As Long
+    Dim rng1ColumnRange As Long
+    Dim rng2Row As Long
+    Dim rng2Column As Long
+    Dim rng2LastRow As Long
+    Dim rng2LastColumn As Long
+    Dim rng2RowRange As Long
+    Dim rng2ColumnRange As Long
+    
+    flagLoopArea = False
+    
+'    Debug.Print VarType(LoopArea1)   '--> 0（定数vbEmpty）と表示される
+'    Debug.Print TypeName(LoopArea1)  '--> Empty　と表示される
+'    Debug.Print IsEmpty(LoopArea1)   '--> True　と表示される
+'**************比較対象セル範囲の入力１つ目**************
+    On Error GoTo myError1
+    Set LoopArea1 = Application.InputBox(prompt:="比較するセル範囲を選択してください（基準セル）", Title:="セル選択", Type:=8)
+    
+    rng1Row = LoopArea1(1).Row
+    rng1Column = LoopArea1(1).Column
+    rng1LastRow = LoopArea1(LoopArea1.Count).Row
+    rng1LastColumn = LoopArea1(LoopArea1.Count).Column
+
+    rng1RowRange = rng1LastRow - rng1Row + 1
+    rng1ColumnRange = rng1LastColumn - rng1Column + 1
+
+'**************比較対象セル範囲の入力２つ目**************
+    On Error GoTo myError2
+    Set LoopArea2 = Application.InputBox(prompt:="比較するセル範囲を選択してください（相違がある場合色が付きます。）", Title:="セル選択", Type:=8)
+    rng2Row = LoopArea2(1).Row
+    rng2Column = LoopArea2(1).Column
+    rng2LastRow = LoopArea2(LoopArea2.Count).Row
+    rng2LastColumn = LoopArea2(LoopArea2.Count).Column
+
+    rng2RowRange = rng2LastRow - rng2Row + 1
+    rng2ColumnRange = rng2LastColumn - rng2Column + 1
+
+'**************比較範囲が同じであることの判定**************
+    If rng1RowRange = rng2RowRange And rng1ColumnRange = rng2ColumnRange Then
+        flagLoopArea = True
+    End If
+    If flagLoopArea = False Then
+        Application.StatusBar = "比較マクロ　＞　入力内容にエラーがありました。プログラムを終了します。"
+        MsgBox "比較するセル範囲は同じ大きさにしてください。"
+        Exit Sub
+    End If
+    
+'**************相違セルの判定プラス比較対象の文字列を配列へ格納**************
+    For i = 1 To LoopArea1.Count
+        If LoopArea1.Cells(i) <> LoopArea2.Cells(i) Then
+            LoopArea2.Cells(i).Interior.ColorIndex = xlThemeColorDark2
+            str1Length = Len(LoopArea1.Cells(i))
+            str2Length = Len(LoopArea2.Cells(i))
+            If str1Length > str2Length Then
+                minStrLength = str2Length
+                maxStrLength = str1Length
+            Else
+                minStrLength = str1Length
+                maxStrLength = str2Length
+            End If
+            ReDim str1H(maxStrLength)
+            ReDim str2H(maxStrLength)
+            For j = 1 To maxStrLength
+                If str1Length >= j Then
+                    str1H(j - 1) = Mid(LoopArea1.Cells(i), j, 1)
+                End If
+                If str2Length >= j Then
+                    str2H(j - 1) = Mid(LoopArea2.Cells(i), j, 1)
+                End If
+            Next j
+'**************格納した文字列の相違箇所の判定**************
+            For j = 1 To maxStrLength
+                If str1H(j - 1) <> str2H(j - 1) Then
+                    LoopArea2.Cells(i).Characters(Start:=j, Length:=1).Font.ColorIndex = 6
+                End If
+            Next j
+            Erase str1H
+            Erase str2H
+        End If
+    Next
+    Application.StatusBar = "比較マクロ　＞　正常終了"
+    Exit Sub
+myError1:
+    Application.StatusBar = "比較マクロ　＞　１つ目の入力にエラーがあったためプログラムを終了します。"
+Exit Sub
+myError2:
+    Application.StatusBar = "比較マクロ　＞　２つ目の入力にエラーがあったためプログラムを終了します。"
+End Sub
