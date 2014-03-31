@@ -1,0 +1,1434 @@
+﻿
+'**********************************************************************************************
+' VBA(アドイン)名 : 図形内文字検索置換ツール Form
+' 機能概要        : Excelの図形内の文字を検索または置換する
+'**********************************************************************************************
+
+Public ShapeStringTool_RadioButton As Integer
+Public ShapeStringTool_CheckBox1 As Integer
+Public ShapeStringTool_CheckBox2 As Integer
+Public ShapeStringTool_CheckBox3 As Integer
+Public ShapeStringTool_CheckBox4 As Integer
+Public ShapeStringTool_Toggle1 As Integer
+Public ShapeStringTool_Toggle2 As Integer
+Public ShapeStringTool_Toggle3 As Integer
+Public ShapeStringTool_ColorIndex As Variant
+Public ShapeStringTool_SearchMode As Integer
+' 検索文字を変数に格納
+Public ShapeStringTool_SearchWord As String
+Public ShapeStringTool_ReplaceWord As String
+Public ShapeStringTool_hitShape As Long
+Public ShapeStringTool_hitString As Long
+Public ShapeStringTool_ErrorFlag As Integer
+Public ShapeStringTool_Excel_Version As String
+Public ShapeStringTool_Group_Name As Variant
+Public ShapeStringTool_GroupFlag As Integer
+Public ShapeStringTool_ColorSelectFlag As Integer
+Public ShapeStringTool_ColorSelectShow As Integer
+
+Private Sub CommandButton5_Click()
+' 検索
+  ShapeStringTool_SearchMode = 1
+  If TextBox1.Value = "" Then
+    MsgBox "検索する文字を入力してください"
+    Exit Sub
+  End If
+'  If MsgBox("検索を開始しますか？", vbYesNo) = vbNo Then
+'    MsgBox "検索を中断しました"
+'    Exit Sub
+'  End If
+' 検索文字を変数に格納
+  ShapeStringTool_SearchWord = TextBox1.Value
+' 初期値代入
+  ShapeStringTool_ReplaceWord = ""
+  ShapeStringTool_hitShape = 0
+  ShapeStringTool_hitString = 0
+  ShapeStringTool_ErrorFlag = 0
+  Call initListBox1
+  ReDim resultShapeAray(0)
+  Call ShapeStringTool_Main
+  If ShapeStringTool_hitShape = 0 Then
+    MsgBox "検索が完了しました。１つも見つかりませんでした。"
+  Else
+  For i = 0 To ShapeStringTool_hitShape - 1
+  ShapeStringTool.ListBox1.AddItem resultShapeAray(i).Name
+'    Debug.Print resultShapeAray(i).Name
+  Next
+    MsgBox "検索が完了しました。見つかった図形数＝" & ShapeStringTool_hitShape & " 見つかった文字列の数＝" & ShapeStringTool_hitString
+  End If
+End Sub
+
+Private Sub CommandButton1_Click()
+' 全検索
+  ShapeStringTool_SearchMode = 2
+  If TextBox1.Value = "" Then
+    MsgBox "検索する文字を入力してください"
+    Exit Sub
+  End If
+  If MsgBox("全検索を開始しますか？", vbYesNo) = vbNo Then
+    MsgBox "全検索を中断しました"
+    Exit Sub
+  End If
+  ShapeStringTool_SearchWord = TextBox1.Value
+  ShapeStringTool_ReplaceWord = ""
+  ShapeStringTool_hitShape = 0
+  ShapeStringTool_hitString = 0
+  Call initListBox1
+  ReDim resultShapeAray(0)
+  ShapeStringTool_ErrorFlag = 0
+  Call ShapeStringTool_Main
+  If ShapeStringTool_hitShape = 0 Then
+    MsgBox "全検索が完了しました。１つも見つかりませんでした。"
+  Else
+    For i = 0 To ShapeStringTool_hitShape - 1
+        ShapeStringTool.ListBox1.AddItem resultShapeAray(i).Name
+'    Debug.Print resultShapeAray(i).Name
+    Next
+
+    MsgBox "全検索が完了しました。見つかった図形数＝" & ShapeStringTool_hitShape & " 見つかった文字列の数＝" & ShapeStringTool_hitString
+
+  End If
+End Sub
+Private Sub CommandButton6_Click()
+' 全置換
+  ShapeStringTool_SearchMode = 3
+  If TextBox1.Value = "" Then
+    MsgBox "検索する文字を入力してください"
+    Exit Sub
+  End If
+  If MsgBox("置換を開始しますか？", vbYesNo) = vbNo Then
+    MsgBox "置換を中断しました"
+    Exit Sub
+  End If
+  ShapeStringTool_SearchWord = TextBox1.Value
+  ShapeStringTool_ReplaceWord = TextBox2.Value
+  ShapeStringTool_hitShape = 0
+  Call initListBox1
+  ReDim resultShapeAray(0)
+  ShapeStringTool_hitString = 0
+  ShapeStringTool_ErrorFlag = 0
+  Call ShapeStringTool_Main
+  If ShapeStringTool_hitShape = 0 Then
+    MsgBox "置換が完了しました。１つも見つかりませんでした。"
+  Else
+    For i = 0 To ShapeStringTool_hitShape - 1
+        ShapeStringTool.ListBox1.AddItem resultShapeAray(i).Name
+'    Debug.Print resultShapeAray(i).Name
+    Next
+
+    MsgBox "置換が完了しました。見つかった図形数＝" & ShapeStringTool_hitShape & " 見つかった文字列の数＝" & ShapeStringTool_hitString
+  End If
+End Sub
+
+Private Sub CommandButton2_Click()
+' 全置換
+  ShapeStringTool_SearchMode = 4
+  If TextBox1.Value = "" Then
+    MsgBox "検索する文字を入力してください"
+    Exit Sub
+  End If
+  If MsgBox("全置換を開始しますか？", vbYesNo) = vbNo Then
+    MsgBox "全置換を中断しました"
+    Exit Sub
+  End If
+  ShapeStringTool_SearchWord = TextBox1.Value
+  ShapeStringTool_ReplaceWord = TextBox2.Value
+  ShapeStringTool_hitShape = 0
+  Call initListBox1
+  ReDim resultShapeAray(0)
+  ShapeStringTool_hitString = 0
+  ShapeStringTool_ErrorFlag = 0
+  Call ShapeStringTool_Main
+  If ShapeStringTool_hitShape = 0 Then
+    MsgBox "全置換が完了しました。１つも見つかりませんでした。"
+  Else
+  For i = 0 To ShapeStringTool_hitShape - 1
+      ShapeStringTool.ListBox1.AddItem resultShapeAray(i).Name
+'    Debug.Print resultShapeAray(i).Name
+  Next
+
+    MsgBox "全置換が完了しました。見つかった図形数＝" & ShapeStringTool_hitShape & " 見つかった文字列の数＝" & ShapeStringTool_hitString
+  End If
+End Sub
+
+Private Sub CommandButton3_Click()
+' 対象図形の文字の色とスタイルを初期化する
+  ShapeStringTool_SearchMode = 5
+  ShapeStringTool_SearchWord = ""
+  ShapeStringTool_ReplaceWord = ""
+  ShapeStringTool_hitShape = 0
+  ReDim resultShapeAray(0)
+  ShapeStringTool_hitString = 0
+  ShapeStringTool_ErrorFlag = 0
+  If MsgBox("対象となる図形の全ての文字の色を自動に、スタイルを標準にしますか？", vbYesNo) = vbNo Then
+    MsgBox "対象図形の文字の色とスタイルを初期化するのを中断しました"
+    Exit Sub
+  End If
+  Call ShapeStringTool_Main
+  MsgBox "対象図形の文字の色とスタイルを初期化するのを完了しました。"
+End Sub
+Private Sub CommandButton8_Click()
+  Call ColorSetting
+End Sub
+
+Private Sub CommandButton7_Click()
+  MsgBox "《　注意事項　》" & _
+  vbCrLf & "　" & _
+  vbCrLf & "・本ツールは現在作成途中のものですのでバグ等が発生する可能性があります｡" & _
+  vbCrLf & "・Excelの図形内文字の操作では二重下線、上付き、下付きの文字飾りが初期化されます｡" & _
+  vbCrLf & "・本ツールでの色の操作は基調を黒（自動）とした文書に対して有効です。" & _
+  vbCrLf & "　また本ツールでのスタイルの操作は基調を標準とした文書に対して有効です。" & _
+  vbCrLf & "　それ以外の文書では置換および色とスタイルの機能を使用しないでください。" & _
+  vbCrLf & "　また置換および色とスタイルの操作を行う場合はExcel自身のスタイルボタンはオフにして使用してください。" & _
+  vbCrLf & "・グループ化した図形内の文字はグループ解除しないと操作できません。" & _
+  vbCrLf & "　本ツールでは再帰関数定義にて無限のグループ化の図形を処理可能ですが" & _
+  vbCrLf & "　再グループ化を行うことによりグループ図形の名前のID番号がExcelにより振り直されます。" & _
+  vbCrLf & "　またグループ化された図形の処理中に、検索や置換処理を中断するとグループ化が復元できません。" & _
+  vbCrLf & "　" & _
+  vbCrLf & "　上記事項をご了承のうえ、ご利用ください。"
+End Sub
+
+Private Sub CommandButton4_Click()
+' 終了
+  Unload Me
+  Unload FontColorSelect
+End Sub
+
+Private Sub ListBox1_Click()
+    Dim listBoxRow As Integer
+    Dim dispTempLeft As Integer
+    Dim dispTempTop As Integer
+    Dim j As Integer
+    Dim listBox__Book As Workbook
+    Dim listBox_ShapeRange1 As Range
+    Dim listBox_ShapeRange2 As Range
+
+    
+    listBoxRow = ListBox1.ListIndex
+    
+    Set listBox__Book = Application.ActiveWorkbook
+'    OBJ_SheetArg.Activate
+    resultShapeAray(listBoxRow).Select
+    Set listBox_ShapeRange1 = resultShapeAray(listBoxRow).BottomRightCell
+    listBox_ShapeRange1.Activate
+    Set listBox_ShapeRange2 = resultShapeAray(listBoxRow).TopLeftCell
+    listBox_ShapeRange2.Activate
+    resultShapeAray(listBoxRow).Select
+End Sub
+
+Private Sub OptionButton1_Click()
+  ShapeStringTool_RadioButton = 1
+  If ShapeStringTool_CheckBox4 = 0 Then
+    MsgBox ("検索・置換の対象は選択されたシートの全図形です")
+  End If
+End Sub
+
+Private Sub OptionButton2_Click()
+  ShapeStringTool_RadioButton = 3
+  If ShapeStringTool_CheckBox4 = 0 Then
+    MsgBox ("検索・置換の対象は全シートの全図形です")
+  End If
+End Sub
+
+Private Sub OptionButton3_Click()
+  ShapeStringTool_RadioButton = 2
+  If ShapeStringTool_CheckBox4 = 0 Then
+    MsgBox ("検索・置換の対象は選択されたシートの選択された図形です")
+  End If
+End Sub
+
+Private Sub OptionButton4_Click()
+  ShapeStringTool_RadioButton = 4
+  If ShapeStringTool_CheckBox4 = 0 Then
+    MsgBox ("検索・置換の対象は全シートの選択された図形です")
+  End If
+End Sub
+
+Private Sub CheckBox1_Click()
+  If CheckBox1.Value = True Then
+    ShapeStringTool_CheckBox1 = 1
+    If ShapeStringTool_CheckBox4 = 0 Then
+      MsgBox ("大文字と小文字を区別します")
+    End If
+  Else
+    ShapeStringTool_CheckBox1 = 0
+    If ShapeStringTool_CheckBox4 = 0 Then
+      MsgBox ("大文字と小文字を区別しません")
+    End If
+  End If
+End Sub
+
+Private Sub CheckBox2_Click()
+  If CheckBox2.Value = True Then
+    ShapeStringTool_CheckBox2 = 1
+    If ShapeStringTool_CheckBox4 = 0 Then
+      MsgBox ("半角と全角を区別します")
+    End If
+  Else
+    ShapeStringTool_CheckBox2 = 0
+    If ShapeStringTool_CheckBox4 = 0 Then
+      MsgBox ("半角と全角を区別しません")
+    End If
+  End If
+
+End Sub
+
+Private Sub CheckBox3_Click()
+  If CheckBox3.Value = True Then
+    ShapeStringTool_CheckBox3 = 1
+    If ShapeStringTool_CheckBox4 = 0 Then
+      MsgBox ("完全に同一な図形だけを検索します")
+    End If
+  Else
+    ShapeStringTool_CheckBox3 = 0
+    If ShapeStringTool_CheckBox4 = 0 Then
+      MsgBox ("完全に同一でない図形も検索します")
+    End If
+  End If
+
+End Sub
+
+Private Sub CheckBox4_Click()
+  If CheckBox4.Value = True Then
+    ShapeStringTool_CheckBox4 = 1
+'   MsgBox ("以降、設定変更時の確認メッセージを表示しません")
+  Else
+    ShapeStringTool_CheckBox4 = 0
+'   MsgBox ("設定変更時の確認メッセージを表示します")
+  End If
+
+End Sub
+
+Private Sub ToggleButton1_Click()
+'太字（ボールド）
+  If ToggleButton1.Value = True Then
+    ShapeStringTool_Toggle1 = 1
+    If ShapeStringTool_CheckBox4 = 0 Then
+      MsgBox "検索・置換後の文字のスタイルに太字を設定します。"
+    End If
+  Else
+    ShapeStringTool_Toggle1 = 0
+    If ShapeStringTool_CheckBox4 = 0 Then
+      MsgBox "検索・置換後の文字のスタイルに太字を設定しません。"
+    End If
+  End If
+End Sub
+
+Private Sub ToggleButton2_Click()
+'斜体（イタリック）
+  If ToggleButton2.Value = True Then
+    ShapeStringTool_Toggle2 = 1
+    If ShapeStringTool_CheckBox4 = 0 Then
+      MsgBox "検索・置換後の文字のスタイルに斜体を設定します。"
+    End If
+  Else
+    ShapeStringTool_Toggle2 = 0
+    If ShapeStringTool_CheckBox4 = 0 Then
+      MsgBox "検索・置換後の文字のスタイルに斜体を設定しません。"
+    End If
+  End If
+End Sub
+
+Private Sub ToggleButton3_Click()
+'下線（アンダーライン）
+  If ToggleButton3.Value = True Then
+    ShapeStringTool_Toggle3 = 1
+    If ShapeStringTool_CheckBox4 = 0 Then
+      MsgBox "検索・置換後の文字に下線を設定します。"
+    End If
+  Else
+    ShapeStringTool_Toggle3 = 0
+    If ShapeStringTool_CheckBox4 = 0 Then
+      MsgBox "検索・置換後の文字に下線を設定しません。"
+    End If
+  End If
+End Sub
+Private Sub ToggleButton4_Click()
+  If ToggleButton4.Value = True Then
+    Call ColorSetting
+  Else
+    ShapeStringTool_ColorSelectFlag = 0
+    ShapeStringTool_ColorIndex = 0
+    ToggleButton4.ForeColor = &H0
+    ToggleButton4.ControlTipText = "色が指定されていません"
+  End If
+End Sub
+Private Sub UserForm_Initialize()
+  ShapeStringTool_ColorIndex = 0
+  ShapeStringTool_ColorSelectFlag = 0
+  ShapeStringTool_ColorSelectShow = 0
+  ShapeStringTool_RadioButton = 1
+  ShapeStringTool_GroupFlag = 0
+  ShapeStringTool_CheckBox1 = 0
+  ShapeStringTool_CheckBox2 = 1
+  ShapeStringTool_CheckBox3 = 0
+  ShapeStringTool_CheckBox4 = 1
+  ShapeStringTool_Toggle1 = 0
+  ShapeStringTool_Toggle2 = 0
+  ShapeStringTool_Toggle3 = 0
+  CommandButton1.ControlTipText = "全検索（全ての図形を一気に検索します）"
+  CommandButton2.ControlTipText = "全置換（全ての図形を一気に置換します）"
+  CommandButton3.ControlTipText = "対象となる図形の全ての文字の色を自動に、スタイルを標準にします"
+  CommandButton4.ControlTipText = "終了（ツールを終了します）"
+  CommandButton5.ControlTipText = "検索（図形をひとつひとつ検索します）"
+  CommandButton6.ControlTipText = "置換（図形をひとつひとつ置換します）"
+  CommandButton7.ControlTipText = "注意事項を表示します"
+  CommandButton8.ControlTipText = "色を選択します"
+  ToggleButton1.ControlTipText = "太字を選択します"
+  ToggleButton2.ControlTipText = "斜体を選択します"
+  ToggleButton3.ControlTipText = "下線を選択します"
+  ToggleButton4.ControlTipText = "色が指定されていません"
+
+  Select Case Val(Application.Version)
+    Case Is >= 12
+      ShapeStringTool_Excel_Version = "2007"
+    Case Is >= 11
+      ShapeStringTool_Excel_Version = "2003"
+    Case Is >= 10
+      ShapeStringTool_Excel_Version = "2002"
+    Case Is >= 9
+      ShapeStringTool_Excel_Version = "2000"
+    Case Is >= 8
+      ShapeStringTool_Excel_Version = "97"
+    Case Is >= 7
+      ShapeStringTool_Excel_Version = "95"
+    Case Else
+      ShapeStringTool_Excel_Version = "不明"
+  End Select
+  FontColorSelect.Show vbModeless
+  FontColorSelect.Hide
+End Sub
+
+Private Sub UserForm_Terminate()
+' 終了
+  MsgBox ("図形内文字検索・置換ツールを終了します")
+End Sub
+
+Sub ShapeStringTool_Main()
+  
+' 2003用
+'  If ShapeStringTool_Excel_Version <> "2002" And _
+'     ShapeStringTool_Excel_Version <> "2003" Then
+'     MsgBox ("No Execute Excel 2002 Or 2003 Only")
+'     Exit Sub
+'  End If
+
+  Select Case ShapeStringTool_RadioButton
+    Case 1
+'     検索・置換の対象は現在のシートの全図形
+      Call ShapeStringTool_SelectSheet
+    Case 2
+'     検索・置換の対象は現在のシートの選択された図形
+      Call ShapeStringTool_SelectSheet
+    Case 3
+'     検索・置換の対象は全シートの全図形
+      Call ShapeStringTool_AllSheet
+    Case 4
+'     検索・置換の対象は全シートの選択された図形
+      Call ShapeStringTool_AllSheet
+    Case Else
+  End Select
+End Sub
+Sub ColorFormInitialize()
+  If ShapeStringTool_ColorIndex <> 0 Then
+    Call TogglePreset
+  End If
+
+  FontColorSelect.ToggleButton1.ControlTipText = "自動設定の色"
+  
+  FontColorSelect.ToggleButton2.ControlTipText = "黒"
+  FontColorSelect.ToggleButton3.ControlTipText = "茶"
+  FontColorSelect.ToggleButton4.ControlTipText = "オリーブ"
+  FontColorSelect.ToggleButton5.ControlTipText = "濃い緑"
+  FontColorSelect.ToggleButton6.ControlTipText = "濃い青緑"
+  FontColorSelect.ToggleButton7.ControlTipText = "濃い青"
+  FontColorSelect.ToggleButton8.ControlTipText = "インディゴ"
+  FontColorSelect.ToggleButton9.ControlTipText = "80% 灰色"
+
+  FontColorSelect.ToggleButton10.ControlTipText = "濃い赤"
+  FontColorSelect.ToggleButton11.ControlTipText = "オレンジ"
+  FontColorSelect.ToggleButton12.ControlTipText = "濃い黄"
+  FontColorSelect.ToggleButton13.ControlTipText = "緑"
+  FontColorSelect.ToggleButton14.ControlTipText = "青緑"
+  FontColorSelect.ToggleButton15.ControlTipText = "青"
+  FontColorSelect.ToggleButton16.ControlTipText = "ブルーグレー"
+  FontColorSelect.ToggleButton17.ControlTipText = "50% 灰色"
+
+  FontColorSelect.ToggleButton18.ControlTipText = "赤"
+  FontColorSelect.ToggleButton19.ControlTipText = "薄いオレンジ"
+  FontColorSelect.ToggleButton20.ControlTipText = "ライム"
+  FontColorSelect.ToggleButton21.ControlTipText = "シーグリーン"
+  FontColorSelect.ToggleButton22.ControlTipText = "アクア"
+  FontColorSelect.ToggleButton23.ControlTipText = "薄い青"
+  FontColorSelect.ToggleButton24.ControlTipText = "紫"
+  FontColorSelect.ToggleButton25.ControlTipText = "40% 灰色"
+
+  FontColorSelect.ToggleButton26.ControlTipText = "ピンク"
+  FontColorSelect.ToggleButton27.ControlTipText = "ゴールド"
+  FontColorSelect.ToggleButton28.ControlTipText = "黄"
+  FontColorSelect.ToggleButton29.ControlTipText = "明るい緑"
+  FontColorSelect.ToggleButton30.ControlTipText = "水色"
+  FontColorSelect.ToggleButton31.ControlTipText = "スカイブルー"
+  FontColorSelect.ToggleButton32.ControlTipText = "プラム"
+  FontColorSelect.ToggleButton33.ControlTipText = "25% 灰色"
+  
+  FontColorSelect.ToggleButton34.ControlTipText = "ローズ"
+  FontColorSelect.ToggleButton35.ControlTipText = "ベージュ"
+  FontColorSelect.ToggleButton36.ControlTipText = "薄い黄"
+  FontColorSelect.ToggleButton37.ControlTipText = "薄い緑"
+  FontColorSelect.ToggleButton38.ControlTipText = "薄い水色"
+  FontColorSelect.ToggleButton39.ControlTipText = "ペールブルー"
+  FontColorSelect.ToggleButton40.ControlTipText = "ラベンダー "
+  FontColorSelect.ToggleButton41.ControlTipText = "白"
+
+End Sub
+Sub TogglePreset()
+  Select Case ShapeStringTool_ColorIndex
+    Case xlAutomatic
+      FontColorSelect.ToggleButton1.Value = True
+    Case 1
+      FontColorSelect.ToggleButton2.Value = True
+    Case 53
+      FontColorSelect.ToggleButton3.Value = True
+    Case 52
+      FontColorSelect.ToggleButton4.Value = True
+    Case 51
+      FontColorSelect.ToggleButton5.Value = True
+    Case 49
+      FontColorSelect.ToggleButton6.Value = True
+    Case 11
+      FontColorSelect.ToggleButton7.Value = True
+    Case 55
+      FontColorSelect.ToggleButton8.Value = True
+    Case 56
+      FontColorSelect.ToggleButton9.Value = True
+    Case 9
+      FontColorSelect.ToggleButton10.Value = True
+    Case 46
+      FontColorSelect.ToggleButton11.Value = True
+    Case 12
+      FontColorSelect.ToggleButton12.Value = True
+    Case 10
+      FontColorSelect.ToggleButton13.Value = True
+    Case 14
+      FontColorSelect.ToggleButton14.Value = True
+    Case 5
+      FontColorSelect.ToggleButton15.Value = True
+    Case 47
+      FontColorSelect.ToggleButton16.Value = True
+    Case 16
+      FontColorSelect.ToggleButton17.Value = True
+    Case 3
+      FontColorSelect.ToggleButton18.Value = True
+    Case 45
+      FontColorSelect.ToggleButton19.Value = True
+    Case 43
+      FontColorSelect.ToggleButton20.Value = True
+    Case 50
+      FontColorSelect.ToggleButton21.Value = True
+    Case 42
+      FontColorSelect.ToggleButton22.Value = True
+    Case 41
+      FontColorSelect.ToggleButton23.Value = True
+    Case 13
+      FontColorSelect.ToggleButton24.Value = True
+    Case 48
+      FontColorSelect.ToggleButton25.Value = True
+    Case 7
+      FontColorSelect.ToggleButton26.Value = True
+    Case 44
+      FontColorSelect.ToggleButton27.Value = True
+    Case 6
+      FontColorSelect.ToggleButton28.Value = True
+    Case 4
+      FontColorSelect.ToggleButton29.Value = True
+    Case 8
+      FontColorSelect.ToggleButton30.Value = True
+    Case 33
+      FontColorSelect.ToggleButton31.Value = True
+    Case 54
+      FontColorSelect.ToggleButton32.Value = True
+    Case 15
+      FontColorSelect.ToggleButton33.Value = True
+    Case 38
+      FontColorSelect.ToggleButton34.Value = True
+    Case 40
+      FontColorSelect.ToggleButton35.Value = True
+    Case 36
+      FontColorSelect.ToggleButton36.Value = True
+    Case 35
+      FontColorSelect.ToggleButton37.Value = True
+    Case 34
+      FontColorSelect.ToggleButton38.Value = True
+    Case 37
+      FontColorSelect.ToggleButton39.Value = True
+    Case 39
+      FontColorSelect.ToggleButton40.Value = True
+    Case 2
+      FontColorSelect.ToggleButton41.Value = True
+    Case Else
+  End Select
+End Sub
+
+Sub ColorSetting()
+    Call ColorFormInitialize
+    ShapeStringTool_ColorSelectShow = 1
+    FontColorSelect.Show
+    ShapeStringTool_ColorSelectShow = 0
+    FontColorSelect.Hide
+    If ShapeStringTool_ColorIndex = 0 Then
+      ToggleButton4.ForeColor = &H0
+      ToggleButton4.ControlTipText = "色が指定されていません"
+      ToggleButton4.Value = False
+      ShapeStringTool_ColorSelectFlag = 0
+    Else
+      ToggleButton4.Value = True
+      ShapeStringTool_ColorSelectFlag = 1
+      Select Case ShapeStringTool_ColorIndex
+        Case xlAutomatic
+          ToggleButton4.ForeColor = "&H000000"
+          ToggleButton4.ControlTipText = "フォントの色（自動）"
+        Case 1
+          ToggleButton4.ForeColor = "&H000000"
+          ToggleButton4.ControlTipText = "フォントの色（黒）"
+        Case 53
+          ToggleButton4.ForeColor = "&H003399"
+          ToggleButton4.ControlTipText = "フォントの色（茶）"
+        Case 52
+          ToggleButton4.ForeColor = "&H003333"
+          ToggleButton4.ControlTipText = "フォントの色（オリーブ）"
+        Case 51
+          ToggleButton4.ForeColor = "&H003300"
+          ToggleButton4.ControlTipText = "フォントの色（濃い緑）"
+        Case 49
+          ToggleButton4.ForeColor = "&H663300"
+          ToggleButton4.ControlTipText = "フォントの色（濃い青緑）"
+        Case 11
+          ToggleButton4.ForeColor = "&H800000"
+          ToggleButton4.ControlTipText = "フォントの色（濃い青）"
+        Case 55
+          ToggleButton4.ForeColor = "&H993333"
+          ToggleButton4.ControlTipText = "フォントの色（インディゴ）"
+        Case 56
+          ToggleButton4.ForeColor = "&H333333"
+          ToggleButton4.ControlTipText = "フォントの色（80% 灰色）"
+        Case 9
+          ToggleButton4.ForeColor = "&H000080"
+          ToggleButton4.ControlTipText = "フォントの色（濃い赤）"
+        Case 46
+          ToggleButton4.ForeColor = "&H0066FF"
+          ToggleButton4.ControlTipText = "フォントの色（オレンジ）"
+        Case 12
+          ToggleButton4.ForeColor = "&H008080"
+          ToggleButton4.ControlTipText = "フォントの色（濃い黄）"
+        Case 10
+          ToggleButton4.ForeColor = "&H008000"
+          ToggleButton4.ControlTipText = "フォントの色（緑）"
+        Case 14
+          ToggleButton4.ForeColor = "&H808000"
+          ToggleButton4.ControlTipText = "フォントの色（青緑）"
+        Case 5
+          ToggleButton4.ForeColor = "&HFF0000"
+          ToggleButton4.ControlTipText = "フォントの色（青）"
+        Case 47
+          ToggleButton4.ForeColor = "&H996666"
+          ToggleButton4.ControlTipText = "フォントの色（ブルーグレー）"
+        Case 16
+          ToggleButton4.ForeColor = "&H808080"
+          ToggleButton4.ControlTipText = "フォントの色（50% 灰色）"
+        Case 3
+          ToggleButton4.ForeColor = "&H0000FF"
+          ToggleButton4.ControlTipText = "フォントの色（赤）"
+        Case 45
+          ToggleButton4.ForeColor = "&H0099FF"
+          ToggleButton4.ControlTipText = "フォントの色（薄いオレンジ）"
+        Case 43
+          ToggleButton4.ForeColor = "&H00CC99"
+          ToggleButton4.ControlTipText = "フォントの色（ライム）"
+        Case 50
+          ToggleButton4.ForeColor = "&H669933"
+          ToggleButton4.ControlTipText = "フォントの色（シーグリーン）"
+        Case 42
+          ToggleButton4.ForeColor = "&HCCCC33"
+          ToggleButton4.ControlTipText = "フォントの色（アクア）"
+        Case 41
+          ToggleButton4.ForeColor = "&HFF6633"
+          ToggleButton4.ControlTipText = "フォントの色（薄い青）"
+        Case 13
+          ToggleButton4.ForeColor = "&H800080"
+          ToggleButton4.ControlTipText = "フォントの色（紫）"
+        Case 48
+          ToggleButton4.ForeColor = "&H969696"
+          ToggleButton4.ControlTipText = "フォントの色（40% 灰色）"
+        Case 7
+          ToggleButton4.ForeColor = "&HFF00FF"
+          ToggleButton4.ControlTipText = "フォントの色（ピンク）"
+        Case 44
+          ToggleButton4.ForeColor = "&H00CCFF"
+          ToggleButton4.ControlTipText = "フォントの色（ゴールド）"
+        Case 6
+          ToggleButton4.ForeColor = "&H00FFFF"
+          ToggleButton4.ControlTipText = "フォントの色（黄）"
+        Case 4
+          ToggleButton4.ForeColor = "&H00FF00"
+          ToggleButton4.ControlTipText = "フォントの色（明るい緑）"
+        Case 8
+          ToggleButton4.ForeColor = "&HFFFF00"
+          ToggleButton4.ControlTipText = "フォントの色（水色）"
+        Case 33
+          ToggleButton4.ForeColor = "&HFFCC00"
+          ToggleButton4.ControlTipText = "フォントの色（スカイブルー）"
+        Case 54
+          ToggleButton4.ForeColor = "&H663399"
+          ToggleButton4.ControlTipText = "フォントの色（プラム）"
+        Case 15
+          ToggleButton4.ForeColor = "&HC0C0C0"
+          ToggleButton4.ControlTipText = "フォントの色（25% 灰色）"
+        Case 38
+          ToggleButton4.ForeColor = "&HCC99FF"
+          ToggleButton4.ControlTipText = "フォントの色（ローズ）"
+        Case 40
+          ToggleButton4.ForeColor = "&H99CCFF"
+          ToggleButton4.ControlTipText = "フォントの色（ベージュ）"
+        Case 36
+          ToggleButton4.ForeColor = "&H99FFFF"
+          ToggleButton4.ControlTipText = "フォントの色（薄い黄）"
+        Case 35
+          ToggleButton4.ForeColor = "&HCCFFCC"
+          ToggleButton4.ControlTipText = "フォントの色（薄い緑）"
+        Case 34
+          ToggleButton4.ForeColor = "&HFFFFCC"
+          ToggleButton4.ControlTipText = "フォントの色（薄い水色）"
+        Case 37
+          ToggleButton4.ForeColor = "&HFFCC99"
+          ToggleButton4.ControlTipText = "フォントの色（ペールブルー）"
+        Case 39
+          ToggleButton4.ForeColor = "&HFF99CC"
+          ToggleButton4.ControlTipText = "フォントの色（ラベンダー）"
+        Case 2
+          ToggleButton4.ForeColor = "&HFFFFFF"
+          ToggleButton4.ControlTipText = "フォントの色（白）"
+        Case Else
+      End Select
+    End If
+End Sub
+
+
+Sub ShapeStringTool_SelectSheet()
+
+   Dim OBJ_Book As Workbook
+   Set OBJ_Book = Application.ActiveWorkbook
+   
+   Dim OBJ_Sheet As Worksheet
+   For Each OBJ_Sheet In OBJ_Book.Windows(1).SelectedSheets
+       Call ShapeSearchProc(OBJ_Sheet)
+       If ShapeStringTool_ErrorFlag = 1 Then
+         Exit Sub
+       End If
+   Next
+    
+End Sub
+Sub ShapeStringTool_AllSheet()
+   
+   Dim OBJ_Book As Workbook
+   Set OBJ_Book = Application.ActiveWorkbook
+
+   Dim OBJ_Sheet As Worksheet
+   For Each OBJ_Sheet In OBJ_Book.Worksheets
+       Call ShapeSearchProc(OBJ_Sheet)
+       If ShapeStringTool_ErrorFlag = 1 Then
+         Exit Sub
+       End If
+   Next
+
+End Sub
+
+Sub ShapeSearchProc(OBJ_SheetArg As Worksheet)
+
+    Dim i As Long
+    Dim j As Long
+    Dim OBJ_ShapeArg As Shape
+    OBJ_SheetArg.Activate
+    Select Case ShapeStringTool_RadioButton
+      Case 1
+'      検索・置換の対象は現在のシートの全図形
+        OBJ_SheetArg.Shapes.SelectAll
+'      Case 2
+'       検索・置換の対象は現在のシートの選択された図形
+      Case 3
+'       検索・置換の対象は全シートの全図形
+        OBJ_SheetArg.Shapes.SelectAll
+'      Case 4
+'       検索・置換の対象は全シートの選択された図形
+      Case Else
+    End Select
+      
+      Select Case TypeName(Selection)
+        
+        Case "DrawingObjects"
+        
+          Dim DrawingObjAray() As Shape
+          Dim DrawingObjNameAray() As Variant
+          Dim DrawingObj_Count As Long
+          DrawingObj_Count = 0
+          
+'画像文字データを配列へ格納
+          For i = 1 To Selection.Count
+            If TypeName(Selection.ShapeRange(i)) = "Shape" Then
+              DrawingObj_Count = DrawingObj_Count + 1
+              ReDim Preserve DrawingObjAray(DrawingObj_Count)
+              Set DrawingObjAray(DrawingObj_Count) = Selection.ShapeRange(i)
+              ReDim Preserve DrawingObjNameAray(DrawingObj_Count - 1)
+              DrawingObjNameAray(DrawingObj_Count - 1) = DrawingObjAray(DrawingObj_Count).Name
+            End If
+          Next
+          
+          For i = 1 To DrawingObj_Count
+            Set OBJ_ShapeArg = DrawingObjAray(i)
+            Select Case OBJ_ShapeArg.Type
+              Case msoAutoShape
+                Call StringSearchProc(OBJ_SheetArg, OBJ_ShapeArg)
+                If ShapeStringTool_ErrorFlag = 1 Then
+                  Exit Sub
+                End If
+              Case msoTextBox
+                Call StringSearchProc(OBJ_SheetArg, OBJ_ShapeArg)
+                If ShapeStringTool_ErrorFlag = 1 Then
+                  Exit Sub
+                End If
+              Case msoGroup
+                ShapeStringTool_GroupFlag = 1
+                Dummy_TempWK = UnGrSelAllReGrFuncProc(OBJ_SheetArg, OBJ_ShapeArg)
+                ShapeStringTool_GroupFlag = 0
+                If ShapeStringTool_ErrorFlag = 1 Then
+                  Exit Sub
+                End If
+                DrawingObjNameAray(i - 1) = ShapeStringTool_Group_Name
+              Case Else
+            End Select
+          Next
+          
+          OBJ_SheetArg.Shapes.Range(DrawingObjNameAray).Select
+
+        Case "GroupObject"
+          
+          Set OBJ_ShapeArg = Selection.ShapeRange(1)
+          
+          ShapeStringTool_GroupFlag = 1
+          Dummy_TempWK = UnGrSelAllReGrFuncProc(OBJ_SheetArg, OBJ_ShapeArg)
+          ShapeStringTool_GroupFlag = 0
+          
+          OBJ_SheetArg.Shapes.Range(ShapeStringTool_Group_Name).Select
+          
+        Case Else
+          
+          On Error Resume Next
+          Set OBJ_ShapeArg = Selection.ShapeRange(1)
+          If Err.Number <> 0 Then
+            Err.Clear
+'           MsgBox ("Shape Not Found Or Selected")
+            On Error GoTo 0
+            Exit Sub
+          End If
+          On Error GoTo 0
+          Call StringSearchProc(OBJ_SheetArg, OBJ_ShapeArg)
+          If ShapeStringTool_ErrorFlag = 1 Then
+            Exit Sub
+          End If
+        
+      End Select
+
+End Sub
+Sub StringSearchProc(OBJ_SheetArg As Worksheet, SS_ShapeArg As Shape)
+  
+  Dim TargetString As String
+  Dim Target_len As Long
+  Dim Search_len As Long
+  Dim Replace_len As Long
+  Dim OBJ_ShapeRange1 As Range
+  Dim OBJ_ShapeRange2 As Range
+  Dim ReplicaShape As Shape
+  Dim Shape_Name As String
+
+  Search_len = Len(ShapeStringTool_SearchWord)
+  Replace_len = Len(ShapeStringTool_ReplaceWord)
+  
+  On Error Resume Next
+  TargetString = SS_ShapeArg.TextFrame.Characters.Text
+  If Err.Number <> 0 Then
+    Err.Clear
+    On Error GoTo 0
+    On Error Resume Next
+    TargetString = SS_ShapeArg.Characters.Text
+    If Err.Number <> 0 Then
+      Err.Clear
+      On Error GoTo 0
+      Exit Sub
+    End If
+  End If
+  On Error GoTo 0
+  
+  If Len(TargetString) = 0 Then
+    Exit Sub
+  End If
+  
+  Target_len = Len(TargetString)
+  Shape_Name = SS_ShapeArg.Name
+  
+  If ShapeStringTool_SearchMode <> 5 Then
+    
+    Dim Search_Location As Long
+    Dim Find_SW As Integer
+    Search_Location = 1
+    Find_SW = 0
+
+    While Search_Location <> 0 And Search_Location <= Target_len
+      If ShapeStringTool_CheckBox3 = 1 Then
+        If ShapeStringTool_CheckBox1 = 0 And ShapeStringTool_CheckBox2 = 0 Then
+          If StrConv(TargetString, vbUpperCase + vbNarrow) = StrConv(ShapeStringTool_SearchWord, vbUpperCase + vbNarrow) Then
+            Search_Location = 1
+          Else
+            Search_Location = 0
+          End If
+        Else
+          If ShapeStringTool_CheckBox1 = 0 Then
+            If StrConv(TargetString, vbUpperCase) = StrConv(ShapeStringTool_SearchWord, vbUpperCase) Then
+              Search_Location = 1
+            Else
+              Search_Location = 0
+            End If
+          Else
+            If ShapeStringTool_CheckBox2 = 0 Then
+              If StrConv(TargetString, vbNarrow) = StrConv(ShapeStringTool_SearchWord, vbNarrow) Then
+                Search_Location = 1
+              Else
+                Search_Location = 0
+              End If
+            Else
+              If TargetString = ShapeStringTool_SearchWord Then
+                Search_Location = 1
+              Else
+                Search_Location = 0
+              End If
+            End If
+          End If
+        End If
+      Else
+        If ShapeStringTool_CheckBox1 = 0 And ShapeStringTool_CheckBox2 = 0 Then
+          Search_Location = InStr(Search_Location, StrConv(TargetString, vbUpperCase + vbNarrow), StrConv(ShapeStringTool_SearchWord, vbUpperCase + vbNarrow), vbBinaryCompare)
+        Else
+          If ShapeStringTool_CheckBox1 = 0 Then
+            Search_Location = InStr(Search_Location, StrConv(TargetString, vbUpperCase), StrConv(ShapeStringTool_SearchWord, vbUpperCase), vbBinaryCompare)
+          Else
+            If ShapeStringTool_CheckBox2 = 0 Then
+              Search_Location = InStr(Search_Location, StrConv(TargetString, vbNarrow), StrConv(ShapeStringTool_SearchWord, vbNarrow), vbBinaryCompare)
+            Else
+              Search_Location = InStr(Search_Location, TargetString, ShapeStringTool_SearchWord, vbBinaryCompare)
+            End If
+          End If
+        End If
+      End If
+      
+      If Search_Location <> 0 Then
+        
+        Find_SW = 1
+        ShapeStringTool_hitString = ShapeStringTool_hitString + 1
+        
+        Select Case ShapeStringTool_SearchMode
+
+          Case 1
+'           検索
+            If ShapeStringTool_ColorIndex <> 0 Or _
+               ShapeStringTool_Toggle1 = 1 Or _
+               ShapeStringTool_Toggle2 = 1 Or _
+               ShapeStringTool_Toggle3 = 1 Then
+              Call TextFrameColorChangeProc(SS_ShapeArg, TargetString, Search_Location, Search_len, Search_len)
+            End If
+            Application.ScreenUpdating = True
+            OBJ_SheetArg.Activate
+            SS_ShapeArg.Select
+            Set OBJ_ShapeRange1 = SS_ShapeArg.BottomRightCell
+            OBJ_ShapeRange1.Activate
+            Set OBJ_ShapeRange2 = SS_ShapeArg.TopLeftCell
+            OBJ_ShapeRange2.Activate
+            SS_ShapeArg.Select
+            Selection.Copy
+            ActiveSheet.Paste
+            Set ReplicaShape = Selection.ShapeRange(1)
+            ReplicaShape.IncrementLeft -12#
+            ReplicaShape.IncrementTop -12#
+            ReplicaShape.Fill.Visible = msoFalse
+            ReplicaShape.Fill.Transparency = 0#
+            ReplicaShape.Line.Weight = 6#
+            ReplicaShape.Line.DashStyle = msoLineDash
+            ReplicaShape.Line.Style = msoLineSingle
+            ReplicaShape.Line.Transparency = 0#
+            ReplicaShape.Line.Visible = msoTrue
+            ReplicaShape.Line.ForeColor.SchemeColor = 10
+'           ReplicaShape.Line.BackColor = RGB(255, 255, 255)
+            ReplicaShape.TextFrame.Characters.Text = ""
+            SS_ShapeArg.Select
+            Application.ScreenUpdating = True
+            If MsgBox("検索文字列『" & ShapeStringTool_SearchWord & "』が見つかりました。次の検索をしますか？", vbYesNo) = vbNo Then
+              If ShapeStringTool_GroupFlag = 1 Then
+                If MsgBox("現在グループ化した図形をグループ解除して検索しています。ここで中断するとグループ化が復元されません。それでも中断しますか？", vbYesNo) = vbYes Then
+                  ShapeStringTool_ErrorFlag = 1
+                  MsgBox "検索を中断しました"
+                  ShapeStringTool_hitShape = ShapeStringTool_hitShape + 1
+                  ReDim Preserve resultShapeAray(ShapeStringTool_hitShape)
+                  Set resultShapeAray(ShapeStringTool_hitShape - 1) = SS_ShapeArg
+
+                  ReplicaShape.Delete
+                  Exit Sub
+                End If
+               Else
+                 ShapeStringTool_ErrorFlag = 1
+                 MsgBox "検索を中断しました"
+                 ShapeStringTool_hitShape = ShapeStringTool_hitShape + 1
+                 ReDim Preserve resultShapeAray(ShapeStringTool_hitShape)
+                 Set resultShapeAray(ShapeStringTool_hitShape - 1) = SS_ShapeArg
+
+                 ReplicaShape.Delete
+                 Exit Sub
+              End If
+            End If
+            ReplicaShape.Delete
+            SS_ShapeArg.Select
+          Case 2
+'           全検索
+            If ShapeStringTool_ColorIndex <> 0 Or _
+               ShapeStringTool_Toggle1 = 1 Or _
+               ShapeStringTool_Toggle2 = 1 Or _
+               ShapeStringTool_Toggle3 = 1 Then
+              Call TextFrameColorChangeProc(SS_ShapeArg, TargetString, Search_Location, Search_len, Search_len)
+            End If
+          Case 3
+'           置換
+            Application.ScreenUpdating = True
+            OBJ_SheetArg.Activate
+            SS_ShapeArg.Select
+            Set OBJ_ShapeRange1 = SS_ShapeArg.BottomRightCell
+            OBJ_ShapeRange1.Activate
+            Set OBJ_ShapeRange2 = SS_ShapeArg.TopLeftCell
+            OBJ_ShapeRange2.Activate
+            SS_ShapeArg.Select
+            Selection.Copy
+            ActiveSheet.Paste
+            Set ReplicaShape = Selection.ShapeRange(1)
+            ReplicaShape.IncrementLeft -12#
+            ReplicaShape.IncrementTop -12#
+            ReplicaShape.Fill.Visible = msoFalse
+            ReplicaShape.Fill.Transparency = 0#
+            ReplicaShape.Line.Weight = 6#
+            ReplicaShape.Line.DashStyle = msoLineDash
+            ReplicaShape.Line.Style = msoLineSingle
+            ReplicaShape.Line.Transparency = 0#
+            ReplicaShape.Line.Visible = msoTrue
+            ReplicaShape.Line.ForeColor.SchemeColor = 10
+'           ReplicaShape.Line.BackColor = RGB(255, 255, 255)
+            ReplicaShape.TextFrame.Characters.Text = ""
+            Application.ScreenUpdating = True
+            If MsgBox("検索文字列『" & ShapeStringTool_SearchWord & "』が見つかりました。置き換えて次の検索をしますか？", vbYesNo) = vbNo Then
+              If MsgBox("この置換をスキップして次の検索をしますか？", vbYesNo) = vbNo Then
+                If ShapeStringTool_GroupFlag = 1 Then
+                  If MsgBox("現在グループ化した図形をグループ解除して検索しています。ここで中断するとグループ化が復元されません。それでも中断しますか？", vbYesNo) = vbYes Then
+                    ShapeStringTool_ErrorFlag = 1
+                    MsgBox "置換を中断しました"
+                    ShapeStringTool_hitShape = ShapeStringTool_hitShape + 1
+                    ReDim Preserve resultShapeAray(ShapeStringTool_hitShape)
+                    Set resultShapeAray(ShapeStringTool_hitShape - 1) = SS_ShapeArg
+                    ReplicaShape.Delete
+                    Exit Sub
+                  Else
+                    MsgBox ("この置換をスキップして次の検索をします")
+                    ShapeStringTool_hitShape = ShapeStringTool_hitShape + 1
+                    ReDim Preserve resultShapeAray(ShapeStringTool_hitShape)
+                    Set resultShapeAray(ShapeStringTool_hitShape - 1) = SS_ShapeArg
+                    ReplicaShape.Delete
+                    Exit Sub
+                  End If
+                 Else
+                   ShapeStringTool_ErrorFlag = 1
+                   MsgBox "置換を中断しました"
+                    ShapeStringTool_hitShape = ShapeStringTool_hitShape + 1
+                    ReDim Preserve resultShapeAray(ShapeStringTool_hitShape)
+                    Set resultShapeAray(ShapeStringTool_hitShape - 1) = SS_ShapeArg
+                    ReplicaShape.Delete
+                   Exit Sub
+                End If
+              Else
+                ShapeStringTool_hitShape = ShapeStringTool_hitShape + 1
+                ReDim Preserve resultShapeAray(ShapeStringTool_hitShape)
+                Set resultShapeAray(ShapeStringTool_hitShape - 1) = SS_ShapeArg
+                ReplicaShape.Delete
+                Exit Sub
+              End If
+            End If
+            ReplicaShape.Delete
+            SS_ShapeArg.Select
+            Call TextFrameColorChangeProc(SS_ShapeArg, TargetString, Search_Location, Search_len, Replace_len)
+            Target_len = Len(TargetString)
+          Case 4
+'           全置換
+            Call TextFrameColorChangeProc(SS_ShapeArg, TargetString, Search_Location, Search_len, Replace_len)
+            Target_len = Len(TargetString)
+          
+          Case Else
+        
+        End Select
+        
+        If ShapeStringTool_SearchMode < 3 Then
+          Search_Location = Search_Location + Search_len
+        Else
+          If Replace_len = 0 Then
+            Search_Location = Search_Location + 1
+          Else
+            Search_Location = Search_Location + Replace_len
+          End If
+        End If
+      
+      End If
+    Wend
+  
+  Else
+    
+    SS_ShapeArg.Select
+    With Selection.Characters.Font
+      .ColorIndex = xlAutomatic
+      .FontStyle = "標準"
+      .Underline = xlUnderlineStyleNone
+    End With
+  
+  End If
+  
+  If Find_SW = 1 Then
+    ShapeStringTool_hitShape = ShapeStringTool_hitShape + 1
+    ReDim Preserve resultShapeAray(ShapeStringTool_hitShape)
+    Set resultShapeAray(ShapeStringTool_hitShape - 1) = SS_ShapeArg
+  End If
+  
+End Sub
+Sub TextFrameColorChangeProc(SS_ShapeArg As Shape, TargetString As String, Search_Location As Long, Search_len As Long, Replace_len As Long)
+  
+    Dim MsgDisplaySW As Integer
+    MsgDisplaySW = 0
+  
+    Dim Target_len As Long
+    Target_len = Len(TargetString)
+    
+    If Target_len = Search_len And Replace_len = 0 Then
+      SS_ShapeArg.Select
+      SS_ShapeArg.TextFrame.Characters.Text = ""
+      With Selection.Characters.Font
+        .ColorIndex = xlAutomatic
+        .FontStyle = "標準"
+        .Underline = xlUnderlineStyleNone
+      End With
+      Exit Sub
+    End If
+   
+    Dim TempString1 As String
+    Dim TempString2 As String
+    
+    TempString1 = Left(TargetString, Search_Location - 1)
+    TempString2 = Right(TargetString, Target_len - Search_len - (Search_Location - 1))
+    
+    SS_ShapeArg.Select
+    Dim Colori As Long
+    Dim Colorj As Long
+    Dim NameBaseAray() As Variant
+    Dim NameAray() As Variant
+    Dim DeftName As Variant
+    Dim SizeBaseAray() As Variant
+    Dim SizeAray() As Variant
+    Dim DeftSize As Variant
+    Dim StrikethroughBaseAray() As Variant
+    Dim StrikethroughAray() As Variant
+    Dim OutlineFontBaseAray() As Variant
+    Dim OutlineFontAray() As Variant
+    Dim ShadowBaseAray() As Variant
+    Dim ShadowAray() As Variant
+    Dim BoldBaseAray() As Variant
+    Dim BoldAray() As Variant
+    Dim ItalicBaseAray() As Variant
+    Dim ItalicAray() As Variant
+    Dim UnderlineBaseAray() As Variant
+    Dim UnderlineAray() As Variant
+    Dim ColorBaseAray() As Variant
+    Dim ColorAray() As Variant
+    Dim DeftColor As Variant
+    For Colori = 1 To Target_len
+      With Selection.Characters(Start:=Colori, Length:=1).Font
+        ReDim Preserve NameBaseAray(Colori)
+        ReDim Preserve SizeBaseAray(Colori)
+        ReDim Preserve StrikethroughBaseAray(Colori)
+        ReDim Preserve OutlineFontBaseAray(Colori)
+        ReDim Preserve ShadowBaseAray(Colori)
+        ReDim Preserve BoldBaseAray(Colori)
+        ReDim Preserve ItalicBaseAray(Colori)
+        ReDim Preserve UnderlineBaseAray(Colori)
+        ReDim Preserve ColorBaseAray(Colori)
+        NameBaseAray(Colori) = .Name
+        SizeBaseAray(Colori) = .Size
+        StrikethroughBaseAray(Colori) = .Strikethrough
+        OutlineFontBaseAray(Colori) = .OutlineFont
+        ShadowBaseAray(Colori) = .Shadow
+        If .Bold = False Then
+          BoldBaseAray(Colori) = .Bold
+        Else
+          BoldBaseAray(Colori) = True
+        End If
+        If .Italic = False Then
+          ItalicBaseAray(Colori) = .Italic
+        Else
+          ItalicBaseAray(Colori) = True
+        End If
+        If .Underline = False Then
+'          UnderlineBaseAray(Colori) = .Underline
+          UnderlineBaseAray(Colori) = .Underline
+        Else
+'            UnderlineBaseAray(Colori) = xlUnderlineStyleNone
+'            UnderlineBaseAray(Colori) = True
+            UnderlineBaseAray(Colori) = .Underline
+        End If
+        ColorBaseAray(Colori) = .ColorIndex
+      End With
+    Next
+    
+    With Selection.Characters(Start:=Search_Location, Length:=1).Font
+      DeftName = .Name
+      DeftSize = .Size
+      DeftColor = .ColorIndex
+    End With
+    
+    SS_ShapeArg.Select
+    If ShapeStringTool_SearchMode = 3 Or _
+       ShapeStringTool_SearchMode = 4 Then
+      TargetString = TempString1 & ShapeStringTool_ReplaceWord & TempString2
+      SS_ShapeArg.TextFrame.Characters.Text = TargetString
+      Target_len = Len(TargetString)
+    End If
+    
+    For Colori = 1 To Len(TempString1)
+      ReDim Preserve NameAray(Colori)
+      ReDim Preserve SizeAray(Colori)
+      ReDim Preserve StrikethroughAray(Colori)
+      ReDim Preserve OutlineFontAray(Colori)
+      ReDim Preserve ShadowAray(Colori)
+      ReDim Preserve BoldAray(Colori)
+      ReDim Preserve ItalicAray(Colori)
+      ReDim Preserve UnderlineAray(Colori)
+      ReDim Preserve ColorAray(Colori)
+      NameAray(Colori) = NameBaseAray(Colori)
+      SizeAray(Colori) = SizeBaseAray(Colori)
+      StrikethroughAray(Colori) = StrikethroughBaseAray(Colori)
+      OutlineFontAray(Colori) = OutlineFontBaseAray(Colori)
+      ShadowAray(Colori) = ShadowBaseAray(Colori)
+      BoldAray(Colori) = BoldBaseAray(Colori)
+      ItalicAray(Colori) = ItalicBaseAray(Colori)
+      UnderlineAray(Colori) = UnderlineBaseAray(Colori)
+      ColorAray(Colori) = ColorBaseAray(Colori)
+    Next
+        
+    For Colori = Search_Location To Search_Location + Replace_len - 1
+      ReDim Preserve NameAray(Colori)
+      ReDim Preserve SizeAray(Colori)
+      ReDim Preserve StrikethroughAray(Colori)
+      ReDim Preserve OutlineFontAray(Colori)
+      ReDim Preserve ShadowAray(Colori)
+      ReDim Preserve BoldAray(Colori)
+      ReDim Preserve ItalicAray(Colori)
+      ReDim Preserve UnderlineAray(Colori)
+      ReDim Preserve ColorAray(Colori)
+      NameAray(Colori) = DeftName
+      SizeAray(Colori) = DeftSize
+      StrikethroughAray(Colori) = False
+      OutlineFontAray(Colori) = False
+      ShadowAray(Colori) = False
+      If ShapeStringTool_Toggle1 = 1 And ShapeStringTool_Toggle2 = 1 Then
+        BoldAray(Colori) = True
+        ItalicAray(Colori) = True
+      Else
+        If ShapeStringTool_Toggle1 = 1 Then
+          BoldAray(Colori) = True
+          ItalicAray(Colori) = False
+        Else
+          If ShapeStringTool_Toggle2 = 1 Then
+            BoldAray(Colori) = False
+            ItalicAray(Colori) = True
+          Else
+            BoldAray(Colori) = False
+            ItalicAray(Colori) = False
+          End If
+        End If
+      End If
+      If ShapeStringTool_Toggle3 = 1 Then
+        UnderlineAray(Colori) = xlUnderlineStyleSingle
+'        UnderlineAray(Colori) = True
+      Else
+        UnderlineAray(Colori) = xlUnderlineStyleNone
+'        UnderlineAray(Colori) = .Underline
+'        UnderlineAray(Colori) = False
+      End If
+      If ShapeStringTool_ColorIndex <> 0 Then
+        ColorAray(Colori) = ShapeStringTool_ColorIndex
+      Else
+        ColorAray(Colori) = DeftColor
+      End If
+    Next
+    
+    Colorj = Search_Location + Search_len
+    For Colori = (Search_Location + Replace_len) To Target_len
+      ReDim Preserve NameAray(Colori)
+      ReDim Preserve SizeAray(Colori)
+      ReDim Preserve StrikethroughAray(Colori)
+      ReDim Preserve OutlineFontAray(Colori)
+      ReDim Preserve ShadowAray(Colori)
+      ReDim Preserve BoldAray(Colori)
+      ReDim Preserve ItalicAray(Colori)
+      ReDim Preserve UnderlineAray(Colori)
+      ReDim Preserve ColorAray(Colori)
+      NameAray(Colori) = NameBaseAray(Colorj)
+      SizeAray(Colori) = SizeBaseAray(Colorj)
+      StrikethroughAray(Colori) = StrikethroughBaseAray(Colorj)
+      OutlineFontAray(Colori) = OutlineFontBaseAray(Colorj)
+      ShadowAray(Colori) = ShadowBaseAray(Colorj)
+      BoldAray(Colori) = BoldBaseAray(Colorj)
+      ItalicAray(Colori) = ItalicBaseAray(Colorj)
+      UnderlineAray(Colori) = UnderlineBaseAray(Colorj)
+      ColorAray(Colori) = ColorBaseAray(Colorj)
+      Colorj = Colorj + 1
+    Next
+        
+    SS_ShapeArg.Select
+    For Colori = 1 To Target_len
+        
+      If MsgDisplaySW = 1 Then
+        If ShapeStringTool_ColorIndex <> 0 Then
+          MsgBox (" Start=" & Colori & " Length=1" & " Color=" & ColorAray(Colori))
+        End If
+        If ShapeStringTool_Toggle1 = 1 Or ShapeStringTool_Toggle2 = 1 Then
+          MsgBox (" Start=" & Colori & " Length=1" & " Bold=" & BoldAray(Colori) & " Italic=" & ItalicAray(Colori))
+        End If
+        If ShapeStringTool_Toggle3 = 1 Then
+          MsgBox (" Start=" & Colori & " Length=1" & " UnderLine=" & UnderlineAray(Colori))
+        End If
+      End If
+      With Selection.Characters(Start:=Colori, Length:=1).Font
+        .Name = NameAray(Colori)
+        .Size = SizeAray(Colori)
+        .Strikethrough = StrikethroughAray(Colori)
+        .OutlineFont = OutlineFontAray(Colori)
+        .Shadow = ShadowAray(Colori)
+        If BoldAray(Colori) = True And ItalicAray(Colori) = True Then
+'          .FontStyle = "太字 斜体"
+          .FontStyle = "Bold Italic"
+        Else
+          If BoldAray(Colori) = True Then
+            .FontStyle = "Bold"
+          Else
+            If ItalicAray(Colori) = True Then
+              .FontStyle = "Italic"
+            Else
+              .FontStyle = "標準"
+            End If
+          End If
+        End If
+        .Superscript = False
+        .Subscript = False
+        If UnderlineAray(Colori) = xlUnderlineStyleSingle Then
+          .Underline = xlUnderlineStyleSingle
+        Else
+          .Underline = UnderlineAray(Colori)
+        End If
+        .ColorIndex = ColorAray(Colori)
+      End With
+    
+    Next
+
+End Sub
+
+Function UnGrSelAllReGrFuncProc(ArgSheet As Worksheet, ArgGroup As Shape)
+      
+  Dim i As Long
+  Dim j As Long
+
+  Dim GroupAray() As Shape
+  Dim GroupItems_Name() As Variant
+  Dim GroupItems_Count As Long
+  
+  GroupItems_Count = 0
+  For i = 1 To ArgGroup.GroupItems.Count
+    If TypeName(ArgGroup.GroupItems(i)) = "Shape" Then
+      GroupItems_Count = GroupItems_Count + 1
+      ReDim Preserve GroupAray(GroupItems_Count)
+      Set GroupAray(GroupItems_Count) = ArgGroup.GroupItems(i)
+      ReDim Preserve GroupItems_Name(GroupItems_Count - 1)
+      GroupItems_Name(GroupItems_Count - 1) = GroupAray(GroupItems_Count).Name
+    End If
+  Next
+  
+  With ArgGroup.Ungroup
+    ArgSheet.Shapes.Range(GroupItems_Name).Select
+    Dummy_TempWK = DrawingObjFuncProc(ArgSheet)
+   .Regroup
+    ShapeStringTool_Group_Name = .Name
+  End With
+  
+  UnGrSelAllReGrFuncProc = 0
+
+End Function
+
+Function DrawingObjFuncProc(ArgSheet As Worksheet)
+
+  Dim i As Long
+  Dim OBJ_ShapeArg As Shape
+  
+  Dim DrawingObjAray() As Shape
+  Dim DrawingObjNameAray() As Variant
+  Dim DrawingObj_Count As Long
+  DrawingObj_Count = 0
+          
+  For i = 1 To Selection.Count
+    If TypeName(Selection.ShapeRange(i)) = "Shape" Then
+      DrawingObj_Count = DrawingObj_Count + 1
+      ReDim Preserve DrawingObjAray(DrawingObj_Count)
+      Set DrawingObjAray(DrawingObj_Count) = Selection.ShapeRange(i)
+      ReDim Preserve DrawingObjNameAray(DrawingObj_Count - 1)
+      DrawingObjNameAray(DrawingObj_Count - 1) = DrawingObjAray(DrawingObj_Count).Name
+    End If
+  Next
+    
+  For i = 1 To DrawingObj_Count
+    Set OBJ_ShapeArg = DrawingObjAray(i)
+    Select Case OBJ_ShapeArg.Type
+      Case msoAutoShape
+        Call StringSearchProc(ArgSheet, OBJ_ShapeArg)
+        If ShapeStringTool_ErrorFlag = 1 Then
+          Exit Function
+        End If
+      Case msoTextBox
+        Call StringSearchProc(ArgSheet, OBJ_ShapeArg)
+        If ShapeStringTool_ErrorFlag = 1 Then
+          Exit Function
+        End If
+      Case msoGroup
+        Dummy_TempWK = UnGrSelAllReGrFuncProc(ArgSheet, OBJ_ShapeArg)
+        If ShapeStringTool_ErrorFlag = 1 Then
+          Exit Function
+        End If
+        DrawingObjNameAray(i - 1) = ShapeStringTool_Group_Name
+      Case Else
+   End Select
+   Next
+          
+   ArgSheet.Shapes.Range(DrawingObjNameAray).Select
+   
+   DrawingObjFuncProc = 0
+
+End Function
+
+Sub initListBox1()
+    ListBox1.Clear
+End Sub
+

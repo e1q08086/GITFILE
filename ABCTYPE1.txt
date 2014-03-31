@@ -1,0 +1,67 @@
+﻿'--------------------------------------------------------------------
+' 関数名 : CreateABCBook
+' 機能   : 問題管理一覧からABC分析シートを作成
+' 引数   : なし
+' 戻り値 : なし
+' 作成日 : 2014/03/31
+' 作成者 :
+'--------------------------------------------------------------------
+Sub CreateABCBook()
+Dim actBook As Workbook
+Dim newFileFullPass As String
+Dim newFileName As String
+Dim resultSheetName1 As String
+Dim resultSheetName2 As String
+Dim resultSheetName3 As String
+Dim resultSheetName4 As String
+Dim resultSheetName0 As String
+
+
+    newFileName = "test.xlsm"
+    resultSheetName1 = "Sheet1"
+    resultSheetName2 = "Sheet2"
+    resultSheetName3 = "Sheet5"
+    resultSheetName4 = "Sheet6"
+    resultSheetName0 = "ABC_月"
+
+    '画面出力無効化
+    Application.ScreenUpdating = False
+    Application.DisplayAlerts = False
+    'アクティブブック取得
+    Set actBook = ActiveWorkbook
+    'アクティブブックの編集確認
+    If actBook.Saved = False Then
+    '編集有りの場合は上書き保存を行う
+        actBook.Save
+    End If
+    'コピー先のファイル名作成（フルパス）
+    newFileFullPass = actBook.Path & "\" & newFileName
+    'コピー作成
+    actBook.SaveCopyAs newFileFullPass
+    'コピーファイルオープン
+    Workbooks.Open newFileFullPass
+    'コピーファイルをアクティブにする。
+    Workbooks(newFileName).Activate
+    With Workbooks(newFileName)
+    '全シートを探索し、必要シート以外を削除
+        For i = .Worksheets.Count To 1 Step -1
+            Debug.Print Worksheets(i).Name
+            If (.Worksheets(i).Name <> resultSheetName1) And (.Worksheets(i).Name <> resultSheetName2) _
+            And (.Worksheets(i).Name <> resultSheetName3) And (.Worksheets(i).Name <> resultSheetName4) Then
+                .Worksheets(i).Activate
+                ActiveSheet.Delete
+            Else
+    'シートのリネーム
+                If .Worksheets(i).Name = resultSheetName3 Then
+                    .Worksheets(resultSheetName3).Name = resultSheetName0
+                End If
+            End If
+        Next i
+    End With
+    '保存
+    Workbooks(newFileName).Save
+    '画面出力有効化
+    Application.ScreenUpdating = True
+    Application.DisplayAlerts = True
+    MsgBox "ABC分析ファイルを作成しました。"
+End Sub
