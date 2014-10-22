@@ -1,0 +1,22 @@
+set-location C:\Users\kkkkkk\Desktop
+$f1 = (Get-Content in1.txt) -as [string[]]
+$f2 = (Get-Content in2.txt) -as [string[]]
+$f3
+$i=1
+#$f1.length
+#$f2.length
+if($f1 -eq $f2){
+    Write-Host "OK"
+    $tmp = $f1.Length
+}elseif($f1 -gt $f2){
+    Write-Host "OK F1"
+    $tmp = $f1.Length
+}elseif($f1 -lt $f2){
+    Write-Host "OK F2"
+    $tmp = $f2.Length
+}
+
+for ($i = 0; $i -lt $tmp; $i++){
+    $f3 = $f1[$i] + "," + $f2[$i]
+    Write-Host $f3
+}
