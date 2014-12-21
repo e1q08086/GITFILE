@@ -1,0 +1,100 @@
+Option Explicit
+
+Sub main()
+    Dim strChkBookPath As String
+    Dim arySheetName(1) As String
+    Dim objChkBook As Object
+    Dim i As Integer
+    
+    strChkBookPath = openFile()
+    If strChkBookPath = "False" Then
+        Exit Sub
+    End If
+    
+    'strChkBookPath = "file:///C:\Users\kazuki3\OneDrive\TBL比較マクロ(比較用).xlsm"
+'比較するシート名は同じものを使う
+    arySheetName(0) = "収容金庫一覧1系"
+    arySheetName(1) = "収容金庫一覧2系"
+    
+    Set objChkBook = Workbooks.Open(strChkBookPath, ReadOnly:=True)
+'    Set objChkBook = ThisWorkbook
+    
+    For i = 0 To 1
+        Call compare(objChkBook, arySheetName(i))
+    Next
+    
+    objChkBook.Close (False)
+    
+End Sub
+
+Function openFile() As String
+    openFile = Application.GetOpenFilename("Microsoft Excelブック,*.xlsm?")
+End Function
+
+Sub compare(objChkBook As Object, strProcSheet As String)
+
+'比較元（このworkBook）のデータ格納
+    Dim aryBookData As Variant
+'比較先（前のworkbook）のデータ格納
+    Dim aryChkData As Variant
+'2*2001の2次元配列
+    Dim aryProcChk(1, 1998) As Integer
+    Dim chkDataCt As Integer
+    Dim ChkR As Integer, ChkC As Integer, ChkRM As Integer, ChkCM As Integer
+    Dim bookRow As Long
+    Dim i As Integer, j As Integer
+
+    With ThisWorkbook.Worksheets(strProcSheet)
+    'データが200以上あるとエラーになるよ
+        aryBookData = .Range("C3:AI2000").Value
+        aryChkData = objChkBook.Worksheets(strProcSheet).Range("C3:AI2000").Value
+
+        ChkRM = UBound(aryChkData, 1)
+        ChkCM = UBound(aryChkData, 2)
+        bookRow = 1
+
+        '差分Chk
+        Do While aryBookData(bookRow, 3) <> ""
+        '金店検索
+            For ChkR = 1 To ChkRM
+                '金店が存在しているか？
+                If aryBookData(bookRow, 3) = aryChkData(ChkR, 3) Then
+                    '存在したフラグ？
+                    aryProcChk(0, bookRow - 1) = 1
+                    aryProcChk(1, ChkR - 1) = 1
+                    '行チェック
+                    For ChkC = 1 To ChkCM
+                        '行をチェックし値が同じか？
+                        If aryChkData(ChkR, ChkC) <> aryBookData(bookRow, ChkC) Then
+                            '値が異なる」場合はセル背景色を黄色にセット
+                            .Range("B2").Offset(bookRow, ChkC).Interior.Color = RGB(255, 255, 0)
+                        End If
+                    Next
+                Exit For
+                End If
+            Next
+            bookRow = bookRow + 1
+        Loop
+
+        bookRow = bookRow + 1
+
+        '削除・追加データChk
+        For i = 0 To 1
+            For j = 0 To 1997
+                If aryProcChk(i, j) <> 1 Then
+                    If i = 0 And aryBookData(j + 1, 3) <> "" Then
+                        '追加データは青
+                        .Range("C3:AI3").Offset(j, 0).Interior.Color = RGB(0, 0, 255)
+                    ElseIf i = 1 And aryChkData(j + 1, 3) <> "" Then
+                        '削除データは赤
+                        For ChkC = 1 To ChkCM
+                            .Range("B3").Offset(bookRow, ChkC).Value = aryChkData(j + 1, ChkC)
+                        Next
+                        .Range("C3:AI3").Offset(bookRow, 0).Interior.Color = RGB(255, 0, 0)
+                        bookRow = bookRow + 1
+                    End If
+                End If
+            Next
+        Next
+    End With
+End Sub
