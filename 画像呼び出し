@@ -1,0 +1,99 @@
+Sub 作業なしobj()
+    Dim useGraphicsName1 As String
+    Dim useGraphicsName2 As String
+    useGraphicsName1 = "sample1"
+    useGraphicsName2 = "sampleTextBox1"
+    Call 画像網掛けmain(useGraphicsName1, useGraphicsName2)
+End Sub
+
+
+
+'*********************************************
+'*画像網掛け                                 *
+'*********************************************
+Sub 画像網掛けmain(graphicsName, graphicsItemName)
+    Set selectObj = ActiveWindow.Selection
+    Select Case TypeName(selectObj)
+        Case "Range"
+            Debug.Print "OK"
+           Call 画像コピーペースト(graphicsName, graphicsItemName)
+        Case "GroupObject"
+            Debug.Print "OK"
+            Call copy_paste(selectObj, graphicsName, graphicsItemName)
+        Case Else
+            On Error Resume Next
+            Debug.Print "OK"
+            If selectObj.Count = 1 Then
+            Call copy_paste(selectObj, graphicsName, graphicsItemName)
+            Else
+'複数画像も対応したい・・・
+'            If selectObj.Count <> 0 Then
+'                For Each a In selectObj.Count
+'                    copy_paste(selectObj, graphicsName, graphicsItemName)
+'                Next
+'            Else
+                MsgBox "対応していない図形が選択されている可能性があります。", , "エラー"
+            End If
+            On Error GoTo 0
+        End Select
+End Sub
+
+
+'*********************************************
+'*画像コピーペースト（Range用）         *
+'*********************************************
+Sub 画像コピーペースト(graphicsNameR, graphicsItemNameR)
+    Dim upperSize As Double
+    Dim leftSize As Double
+    Dim bottomSize As Double
+    Dim rightSize As Double
+    Dim tempAdress As String
+    Dim selectFirstRange As Range
+    Dim selectLastRange As Range
+    Dim bottomRightRange As Range
+    Dim a As Variant
+    Dim tempHeight As Double
+    Dim tempWidth As Double
+   
+    
+    Set selectFirstRange = Selection(1)
+    upperSize = Selection(1).Top
+    leftSize = Selection(1).Left
+    tempAdress = Selection(Selection.Count).Address
+    Set selectLastRange = Range(tempAdress)
+    Set bottomRightRange = Range(Cells(selectLastRange.Row + 1, selectLastRange.Column + 1), Cells(selectLastRange.Row + 1, selectLastRange.Column + 1))
+    bottomSize = bottomRightRange.Top
+    rightSize = bottomRightRange.Left
+'    Debug.Print Selection.Height
+'    Debug.Print Selection.Width
+    tempHeight = bottomSize - upperSize
+    tempWidth = rightSize - leftSize
+
+    If tempHeight < 23.25 Or tempWidth < 111.75 Then
+        ThisWorkbook.Worksheets("Sheet1").Shapes(graphicsNameR).GroupItems(graphicsItemNameR).TextFrame.Characters.Font.Size = 9
+    End If
+    ThisWorkbook.Worksheets("Sheet1").Shapes(graphicsNameR).Copy
+    ActiveSheet.Paste Destination:=selectFirstRange
+    Selection.Height = tempHeight
+    Selection.Width = tempWidth
+'    Debug.Print Selection.Height
+'    Debug.Print Selection.Width
+    ThisWorkbook.Worksheets("Sheet1").Shapes(graphicsNameR).GroupItems(graphicsItemNameR).TextFrame.Characters.Font.Size = 16
+
+End Sub
+'*********************************************
+'*画像コピーペースト（Graphics用）           *
+'*********************************************
+Sub copy_paste(paseteObject, graphicsNameG, graphicsItemNameG)
+    If Selection.Height < 23.25 Or Selection.Width < 111.75 Then
+        ThisWorkbook.Worksheets("Sheet1").Shapes(graphicsNameG).GroupItems(graphicsItemNameG).TextFrame.Characters.Font.Size = 9
+    End If
+    ThisWorkbook.Worksheets("Sheet1").Shapes(graphicsNameG).Copy
+    ActiveSheet.Paste
+    Selection.Top = paseteObject.Top
+    Selection.Left = paseteObject.Left
+    Selection.Height = paseteObject.Height
+    Selection.Width = paseteObject.Width
+    ThisWorkbook.Worksheets("Sheet1").Shapes(graphicsNameG).GroupItems(graphicsItemNameG).TextFrame.Characters.Font.Size = 16
+
+End Sub
