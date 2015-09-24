@@ -1,0 +1,17 @@
+@echo off
+rem ファイルの圧縮用bat
+
+rem ZIP対象としたいCSVファイルが保存されている場所へ移動
+
+echo %~1を圧縮します。
+rem Lhaplusを起動する記述 /c:圧縮形式の拡張子 /o:圧縮ファイルの排出場所 /p:パスワード 対象ファイル名
+"C:\Program Files (x86)\Lhaplus\Lhaplus.exe" /c:zip /o:%~dp0 /p:abc %~1
+echo %~1の圧縮が終りました
+
+rem 圧縮が終わった後に対象ファイルを削除したい場合は下記のコメントアウトを解除
+rem del %~1
+
+echo 対象ファイル全ての圧縮が終了しました。
+
+rem 動作確認のおまじない 不要ならばコメントアウト
+pause
