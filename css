@@ -1,0 +1,149 @@
+@charset "shift_jis";
+
+/* 一括で全ての要素の余白をゼロに指定 */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+/* 全体的なリンク */
+
+a:link,
+a:visited,
+a:hover,
+a:active { text-decoration: underline; }
+
+a:link { color: #00f; }
+
+a:visited { color: #90f; }
+
+a:hover { color: #f00; }
+
+a:active { color: #f00; }
+
+/* -------------------------------------------------------------
+   [1] レイアウトに関する指定 */
+
+body {
+  font-size: 85%;
+  text-align: center;
+  font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+  padding:0;
+  margin: 0;
+}
+
+/* 全体を囲んでいます */
+#wrapper {
+  text-align: left;
+  margin: 30px auto 0;
+  width: 620px;
+}
+
+#footer {
+  clear: both;
+  padding-top: 5px;
+  border-top: 5px solid #690;
+}
+
+/* 見出し */
+h1 {
+  font-size: 100%;
+  font-weight: normal;
+  line-height: 1; 
+  text-align: right;
+}
+
+/* 見出し */
+h2 {
+  font-size: 130%;
+  font-weight: normal;
+  line-height: 1;
+  text-align: center;
+  padding-bottom: 5px;
+  border-bottom: 5px solid #690;
+  margin-bottom: 2px;
+}
+
+/* サイトタイトル */
+.logo {
+  font-size: 140%;
+  font-weight: normal;
+  margin-bottom: 2px;
+  padding-bottom: 5px;
+/*  border-bottom: 5px solid #690;*/
+}
+
+.logo a {
+  text-decoration: none;
+  color: #690;
+}
+
+.logo a:hover {
+  text-decoration: none;
+  color: #f00;
+}
+
+/* -- グローバルナビ部分 -- */
+
+#globalnavi {
+  list-style-type: none;
+  width: 620px;
+  height: 300px;
+}
+
+#globalnavi li {
+  width: 155px;
+  float: left;
+}
+
+#globalnavi a {
+  text-align: center;
+  font-size: 140%;
+  text-decoration: none;
+  width: 100%;
+  height: 273px;
+  padding-top: 32px;
+  display: block;
+  background-image: url(img/test1.png); 
+  background-repeat: no-repeat;
+  color: #032;
+}
+
+#category01 a { background-position: 0 0; }
+
+#category02 a { background-position: -155px 0; }
+
+#category03 a { background-position: -310px 0; }
+
+#category04 a { background-position: -465px 0; }
+
+#globalnavi a:hover {
+  text-decoration: none;
+  background-image: url(img/test2.png);
+  background-repeat: no-repeat;
+  color: #f00;
+}
+
+#category01 a:hover { background-position: 0 0; }
+
+#category02 a:hover { background-position: -155px 0; }
+
+#category03 a:hover { background-position: -310px 0; }
+
+#category04 a:hover { background-position: -465px 0; }
+
+#footer p { text-align: right; }
+
+#footer #cr {
+  font-size: 80%;
+  font-family: Geneva, Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding-right: 1em;
+}
+
+#footer #cr,
+#footer #cr a,
+#footer #cr a:hover {
+  text-decoration: none;
+  color: #666666;
+}
