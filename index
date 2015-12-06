@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="Author" content="管理者" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<title>○○ページ</title>
+<meta name="description" content="TOPページ" />
+<meta name="keywords" content="TOPページ" />
+<link rel="stylesheet" href="top-page.css" type="text/css" media="screen" />
+</head>
+<body>
+<div id="wrapper">
+<!-- キーワード -->
+<h1>*** キーワード ***</h1>
+<!-- 企業名｜ショップ名｜タイトル -->
+<p class="logo"><a href="index.html">*** 企業名 ***</a></p>
+<!-- 本文 -->
+<h2>ようこそ担当ホームページへ</h2>
+<ul id="globalnavi">
+<li id="category01"><a href="#abc">担当WIKI</a></li>
+<li id="category02"><a href="#aaa">担当WIKI</a></li>
+<li id="category03"><a href="#as">担当WIKI</a></li>
+<li id="category04"><a href="#aas">担当WIKI</a></li>
+</ul>
+<div id="footer">
+<!-- 管理グループ -->
+<p>問い合わせ先　担当　管理グループ</p>
+<!-- コピーライト -->
+<p id="cr">Copyright &copy; *** 企業名 ***. All Rights Reserved.</p>
+</div>
+</div>
+</body>
+</html>
