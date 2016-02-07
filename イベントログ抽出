@@ -1,0 +1,3 @@
+Get-WinEvent -Path "イベント.evtx"  -FilterXPath "*[System[(Level=1  or Level=2 or Level=3) and  `
+TimeCreated[@SystemTime>='2016-01-15T00:00:00.000Z' and `
+@SystemTime<='2016-01-15T23:59:59.999Z']]]"
