@@ -1,0 +1,22 @@
+Sub main()
+    Dim i As Integer
+    i = 1
+    j = 1
+    k = 1
+    While i < 267      '金庫ループ
+        kinkoNumber = ThisWorkbook.Worksheets("Sheet1").Cells(1 + i, 2)
+        While j < 15   '店舗ループ
+            tenpoNumber = ThisWorkbook.Worksheets("Sheet1").Cells(2, 2 + j)
+            If ThisWorkbook.Worksheets("Sheet1").Cells(1 + i, 19 + j) = 1 Then
+                ThisWorkbook.Worksheets("Sheet2").Cells(1 + i, 1 + k) = "乗替"
+            End If
+            k = k + 1
+            Debug.Print j
+            j = j + 1
+        Wend
+        Debug.Print i
+        j = 1
+        k = 1
+        i = i + 1
+    Wend
+End Sub
