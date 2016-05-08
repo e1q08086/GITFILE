@@ -1,0 +1,32 @@
+MsgBox("処理を開始します。")
+MsgBox("ECS 1番で実行してください。")
+Type("[HOME]")
+Type("[TAB]")
+Type("[TAB]")
+Type("[TAB]")
+Type("'SEARCH WORD'[ENTER]")
+Wait()
+Sleep(1)
+Type("[PF8]")
+Sleep(1)
+Type("[PF3]")
+
+IF( Scan("TSSX") )
+	MsgBox("ログオンが完了しました")
+ELSE
+	MsgBox("ログオンは完了していません")
+ENDIF
+
+
+
+
+
+;; SYSTEM READYの受信を待ちます
+;Wait("SYSTEM READY",1, 1)
+
+
+
+PFD 1,2ショートカット
+SetCursorPos(Row, Col)
+Type("'データセット名'[TAB]")
+Type("'VOL名'[ENTER]")
