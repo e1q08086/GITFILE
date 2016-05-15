@@ -1,0 +1,425 @@
+データセットをコピーする
+データセットのコピーはユーティリティー・プログラムを使って?います。順次
+データセット、区分データセット、VSAM データセット、などデータセットの編成
+に応じたユーティリティーが用意されています。DFDSS などのディスク・ユーティ
+リティーを使えば、同じ方法でのコピー操作（バックアップ）も可能です。
+順次データセットをコピーする
+//PSCOPY EXEC PGM=IEBGENER
+//SYSPRINT DD SYSOUT=*
+//SYSUT1 DD DISP=SHR,DSN=UAP1.MASTER
+//SYSUT2 DD DISP=(,CATLG),DSN=UAP1.WORK,
+// UNIT=SYSDA,VOL=SER=WRKVOL,SPACE=(CYL,(10,10))
+//SYSIN DD DUMMY
+//
+MSP / VOS3 MSP:JSDGENER VOS3:JSDSCPY
+順次データセットを複製するには IEBGENER ユーティリティーを使用します。
+SYSPRINT に実?サマリー・リストの出?先、SYSUT1 に複写元データセット、
+SYSUT2 に複写先データセット、SYSIN にユーティリティーの制御パラメーター
+を指定します。複写元データセットの内容を単純にコピーするなら SYSIN には
+DUMMY を定義できます。
+複写先データセットが新規データセットの場合、RECFM、BLKSIZE、LRECL
+を複写元と同じにしたければ、DD ステートメントの DCB 属性を省略します。DCB
+属性を変更する場合は、複写先データセットの DD ステートメントに必要な DCB
+パラメーターを定義します。例．DCB=(BLKSIZE=2560) ただしレコード?を
+変更する場合は、SYSIN に制御パラメーターが必要です。
+//SYSUT2 DD DISP=(,KEEP),DSN=UAP1.WORK,
+// UNIT=SYSDA,VOL=SER=WRKVOL,SPACE=(CYL,(100),RLSE),
+// DCB=(BLKSIZE=0,LRECL=100)
+//SYSIN DD *
+ GENERATE MAXFLDS=10
+ RECORD FIELD=(100)
+//
+複写元データセットの先頭 100 バイトをコピーします。LRECL は 100 バイト、
+BLKSIZE は最適値が設定されます。RECFM は変わりません。 
+逆引きリファレンス
+データセットをコピーする
+99
+//SYSUT2 DD DISP=(,KEEP),DSN=UAP1.WORK,
+// UNIT=SYSDA,VOL=SER=WRKVOL,SPACE=(CYL,(100),RLSE),
+// DCB=(BLKSIZE=18000,LRECL=300)
+//SYSIN DD *
+ GENERATE MAXFLDS=10,MAXLITS=100
+ RECORD FIELD=(256),
+ FIELD=(32,'********************************',,257),
+ FIELD=(12,'++++++++++++',,289)
+複写元データセットよりも?いレコード持つデータセットにコピーします。
+LRECL は 300 バイト、BLKSIZE は 18000 バイトに設定しています。複写元のレ
+コード?は 256 バイトで、続きの 32 バイトに＊記号、さらに続きの 12 バイト
+に＋記号を埋めて、計 300 バイトに合わせています。
+GENER ユーティリティーでレコード?を変更する場合は、RECORD 制御文の
+各 FILED パラメーターの合計レングスが、LRECL に指定した?さと?盾しないよ
+うにする必要があります。可変?レコードの場合、LRECL には RDW の?さ 4 バ
+イトが含まれることに注意します。
+//SYSUT2 DD DISP=(,KEEP),DSN=UAP1.WORK,
+// UNIT=SYSDA,VOL=SER=WRKVOL,SPACE=(CYL,(100),RLSE),
+// DCB=(RECFM=VB,BLKSIZE=0,LRECL=260)
+//SYSIN DD DUMMY
+//
+RECFM の変換は F から V 形式であれば可能です。V から F 形式へは変換でき
+ません。
+//PSCOPY EXEC PGM=ICEGENER
+//SYSPRINT DD SYSOUT=*
+//SYSUT1 DD DISP=SHR,DSN=UAP1.MASTER
+//SYSUT2 DD DISP=(,CATLG),DSN=UAP1.WORK,
+// UNIT=SYSDA,VOL=SER=WRKVOL,SPACE=(CYL,(10,10))
+//SYSIN DD DUMMY
+//
+MVS では DFSORT が導入されていれば、IEBGENER の代わりに ICEGENER
+ユーティリティーが利用できます。同じデータセットをコピーするなら、
+ICEGENER の方が、実?パフォーマンスが上がります。大量のレコードをコピー
+する場合、実?時間の短縮、CPU 使用量と I/O 回数の削減ができます。
+ただし ICEGENER では、複写先データセットの DCB 属性が省略された場合、
+BLKSIZE は複写先データセットの DASD トラック?に合わせ最適化されてしま
+います。複写元と同じ BLKSIZE にしたければ IEBGENER を使うか、SYSUT2 に
+DCB=BLKSIZE パラメーターを指定します。 
+逆引きリファレンス
+データセットをコピーする
+100
+順次データセットをマージする
+//PSCOPY EXEC PGM=IEBGENER
+//SYSPRINT DD SYSOUT=*
+//SYSUT1 DD DISP=SHR,DSN=UAP1.MASTER1
+// DD DISP=SHR,DSN=UAP1.MASTER2
+// DD DISP=SHR,DSN=UAP1.MASTER3
+//SYSUT2 DD DISP=(,CATLG),DSN=UAP1.WORK,
+// UNIT=SYSDA,VOL=SER=WRKVOL,SPACE=(CYL,(10,10))
+//SYSIN DD DUMMY
+//
+MSP / VOS3 MSP:JSDGENER VOS3:JSDSCPY
+複数の順次データセットを単純にマージするなら、DD ステートメントの連結機
+能と IEBGENER ユーティリティーで?うことができます。SYSUT1 に複写元デー
+タセットを読み込み順に定義します。サンプルのように定義した場合、
+UAP1.MASTER1 の最後のレコードの次に、UAP1.MASTER2 の先頭レコードが続
+きます。
+SORT ユーティリティーの MERGE 機能と異なり、読み込ませるデータセット
+内のレコードは、予めソートされている必要はありません。
+複数のデータセットをまとめてコピーする
+//DFDSS EXEC PGM=ADRDSSU,REGION=4M
+//SYSPRINT DD SYSOUT=*
+//SYSIN DD *
+ COPY DATASET(INCLUDE(UAP1.**)) -
+ OUTDYNAM(WORK01) -
+ RENUNC(UAP1.**,WRK1.**) CATALOG [ALLX ALLD(*)]
+//
+MSP / VOS3 MSP:KBKARCS(非互換)
+DFSMSdss*1 を使用すると、複数のデータセットをまとめてコピーすることが
+できます。サンプルでは、先頭修飾子 UAP1 を持つカタログされているデータセ
+ットを、ボリューム WORK01 にコピーします。複写先のデータセットは修飾子
+を WRK1 に変更してカタログします。
+*1 DASD ボリュームのバックアップなどを行う、ディスク・ユーティリティー。
+ALLX および ALLD(*)オプションを指定すると、レコードが書かれていない領
+域も含めて、アロケーションされているスペース全体がコピーされます。100cyl
+のデータセットにおいて、レコードが 60%しか書かれていないと 60cyl が複写先
+逆引きリファレンス
+データセットをコピーする
+101
+データセットの容量になりますが、ALLD オプションがあると、複写先データセッ
+トも 100cyl で作成されます。
+DFSMSdss を使えば、順次、区分および VSAM 等、DASD ボリューム上のデー
+タセットを同じ操作でコピーすることができます。
+//ARCS EXEC PGM=KBKARCS
+//SYSPRINT DD SYSOUT=*
+//SYSUT1 DD VOL=SER=DATA01,UNIT=SYSDA,DISP=OLD
+//SYSUT2 DD VOL=SER=WORK01,UNIT=SYSDA,DISP=OLD
+//SYSIN DD *
+ COPY DATASET(UAP1.%),FROM(DD(SYSUT1)),TO(DD(SYSUT2)),
+ RENAME((UAP1.%,WRK1.%)),LIST
+//
+MSP の ARCS による、複数データセットのコピー例。DFDSS と異なり、VSAM
+データセットはコピーできません。
+可変?レコードを固定?に変換してコピーする
+//PSCOPY EXEC PGM=SORT
+//SYSOUT DD SYSOUT=*
+//SORTIN DD DISP=SHR,DSN=UAP1.MASTER
+//SORTOUT DD DISP=(,KEEP),DSN=UAP1.WORK,
+// UNIT=SYSDA,VOL=SER=WORK01,SPACE=(CYL,(10,10),RLSE)
+//SYSIN DD *
+ OPTION COPY
+ OUTFIL VTOF,OUTREC=(5,80),VLFILL=C' '
+//
+GENER では可変?レコードから固定?レコードのデータセットにコピーする
+ことはできませんが、MVS の DFSORT ユーティリティーを使うと V 形式から F
+形式に変換することができます。OPTION COPY（SORT FIELDS=COPY でも同
+じ）は SORT でなく COPY を?うことを示し、OUTFIL ステートメントの VTOF
+は、RECFM の V→F 変換を示します。同時に元のレコードの先頭 80 バイトだけ
+が複写先データセットにコピーされるよう、レコード?の変更も?っています。
+OUTREC パラメーターでコピー開始桁を 5 桁目からにしているのは、入?元の可
+変?データセットの先頭 4 バイトは RDW フィールドであるためです。また
+VLFILL パラメーターで 80 バイトより短いレコードの後続に埋め込む PAD 文字
+を指定しています。
+複写先データセットのレコード?は OUTREC パラメーターなどの、制御ステー
+トメントで指定した編集後のフィールド?に合わせて、ユーティリティーが設定
+するので、DCB パラメーターは省略できます。 
+逆引きリファレンス
+データセットをコピーする
+102
+入?レコードの選択や、編集をしてコピーする
+//PSCOPY EXEC PGM=SORT
+//SYSOUT DD SYSOUT=*
+//SORTIN DD DISP=SHR,DSN=UAP1.MASTER
+//SORTOUT DD DISP=(,KEEP),DSN=UAP1.WORK,
+// UNIT=SYSDA,VOL=SER=WORK01,SPACE=(CYL,(10,10),RLSE)
+//SYSIN DD *
+ OPTION COPY
+ INCLUDE COND=(18,1,CH,EQ,C'@')
+ OUTFIL OUTREC=(1,80,53,8,PD,EDIT=(II,III,III))
+//
+GENER でもレコード内フィールドの配置換えなど、いくつかの編集機能が利用
+できますが、SORT ユーティリティーの方がより豊富なレコード編集機能を持っ
+ています。またコピーするレコードを条件に合わせて選択することもできます。
+サンプルでは、INCLUDE ステートメントで 18 桁目の 1 バイトが文字@である
+レコードのみをコピーするよう指定し、OUTFIL ステートメントで複写元レコー
+ドの 1?80 バイトの後ろに、53 桁目からの 8 バイトのパック 10 進数を、文字列
+ZZ,ZZZ,ZZ9に変換して追加しています（Zは先?ゼロを空白にすることを示す）。
+結果として複写元レコードは 90 バイトになります。
+複写元データセットが次のような内容の場合、
+----+----1----+----2----+- ---5----+----6----+----7----+----8
+ABCDEFGHIJKLMNOPQRSTUVWXYZ…UVWXYZ........*******************<
+ABCDEFGHIJKLMNOPQ@STUVWXYZ…UVWXYZ.......<*******************<
+ABCDEFGHIJKLMNOPQRSTUVWXYZ…UVWXYZ.......********************<
+ABCDEFGHIJKLMNOPQ@STUVWXYZ…UVWXYZ.... ..%*******************<
+ABCDEFGHIJKLMNOPQRSTUVWXYZ…UVWXYZ.......@*******************<
+複写先データセットは以下のようになります。
+パック 10 進数の部分
+追加されたフィールド
+----+----1----+----2----+- ---5----+----6----+----7----+----8----+----9
+ABCDEFGHIJKLMNOPQ@STUVWXYZ…UVWXYZ.......<*******************< 21,004
+ABCDEFGHIJKLMNOPQ@STUVWXYZ…UVWXYZ.... ..%*******************< 4,001,006
+複写元データセットは VSAM でもかまいません。
+//PSCOPY EXEC PGM=SORT
+//SYSOUT DD SYSOUT=*
+//SORTIN DD DISP=SHR,DSN=UAP1.VSAM.MASTER
+//SORTOUT DD DISP=(,KEEP),DSN=UAP1.VSAM.WORK,
+// UNIT=SYSDA,VOL=SER=WORK01,SPACE=(CYL,(10,10),RLSE),
+// RECORG=ES,LRECL=90
+//SYSIN DD *
+ OPTION COPY
+ INCLUDE COND=(18,1,CH,EQ,C'@')
+ OUTFIL OUTREC=(1,80,53,8,PD,EDIT=(II,III,III))
+// 
+逆引きリファレンス
+データセットをコピーする
+103
+複写先を新規の VSAM データセットにする場合、レコード?の指定は省略でき
+ません。OUTREC で編集される出?レコードの?さと?盾しないようにします。
+VSAM データセットをコピーする
+//VSCOPY EXEC PGM=ICEGENER
+//SYSPRINT DD SYSOUT=*
+//SYSUT1 DD DISP=SHR,DSN=UAP1.VSAM.MASTER
+VSAM 同士のコピー
+//SYSUT2 DD DISP=(,CATLG),DSN=UAP1.VSAM.WORK,
+// UNIT=SYSDA,VOL=SER=WRKVOL,
+// SPACE=(TRK,(10,1)),LIKE=UAP1.VSAM.MASTER
+//SYSIN DD DUMMY
+//
+MVS では ICEGENER を使用すれば、VSAM データセットも、順次データセッ
+トと同じようにコピーすることができます。
+サンプルでは SYSUT1 で指定した VSAM データセットを SYSUT2 で新規作成
+する VSAM データセットにコピーしています。VSAM データセットとしての編成
+タイプ（KSDS や ESDS など）、レコード?、キー?などは、LIKE パラメーター
+で複写元データセットを参照しています。
+//VSCOPY EXEC PGM=ICEGENER
+//SYSPRINT DD SYSOUT=* PS→VSAM へロード
+//SYSUT1 DD DISP=SHR,DSN=UAP1.MASTER.UNLOAD
+//SYSUT2 DD DISP=SHR,DSN=UAP1.VSAM.MASTER
+//SYSIN DD DUMMY
+//
+順次データセットの内容を VSAM にコピーしたり、その逆に VSAM データセッ
+トの内容を順次データセットにコピーしたりすることもでき、AMS の REPRO 機
+能の代わりに使用することもできます。
+ただし、固定?レコードの PS から可変?レコードの VSAM へコピーすると、
+VSAM 側には最大レコード?で出?され、入?側レコードが短い場合は x00 がパ
+ディングされます。可変?で VSAM へロードするには、入?側も可変?にするか、
+AMS ユーティリティーの REPRO コマンドを使用します。
+//VSUNLD EXEC PGM=ICEGENER
+//SYSPRINT DD SYSOUT=* VSAM→PS へアンロード
+//SYSUT1 DD DISP=SHR,DSN=UAP1.VSAM.MASTER
+//SYSUT2 DD DISP=(,CATLG),DSN=UAP1.MASTER.UNLOAD,
+// UNIT=SYSDA,VOL=SER=WRKVOL,SPACE=(TRK,(10,1))
+//SYSIN DD DUMMY
+// 
+逆引きリファレンス
+データセットをコピーする
+104
+出?側データセットの DCB は入?側 VSAM データセットのレコード?に合わ
+せて設定されますが、固定?レコードとなります。出?側を可変?にする場合は、
+DCB=RECFM=VB パラメーターを指定できます。
+PS→VSAM/ESDS の場合、既存の VSAM データセットに対しては、DISP=MOD
+の指定でなくても、コピーされるレコードは追加される形でコピーされます。PS
+→VSAM/KSDS の場合、重複キーを持つレコードはコピーされず、PS 側のレコー
+ドはキー順にソートされていなければなりません。次に示す AMS ユーティリティ
+ーと同じ動きになります。
+//VSCOPY EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSUT1 DD DISP=SHR,DSN=UAP1.MASTER.UNLOAD
+//SYSUT2 DD DISP=SHR,DSN=UAP1.VSAM.MASTER
+//SYSIN DD *
+ REPRO IFILE(SYSUT1) OFILE(SYSUT2)
+//
+レコード内容の?盾などでエラーが起きた場合、ICEGENER では SYSPRINT
+を?ても単にエラーが起きたことしかわからないので、その場合は AMS でやり直
+せば、より具体的なエラーの意味を知ることができます。
+VSAM←→順次データセット間でコピーする
+VSAM と順次データセット間でデータ・レコードを相互にコピーし合うには、
+AMS ユーティリティーの REPROコマンドが利用できます。z/OS では ICEGENER
+で VSAM も順次データセットと同じように扱うこともできますが、固定?レコー
+ドの PS から可変?レコードの VSAM へコピーする場合は、REPRO コマンドを利
+用すれば、レコード形式を変換してコピーできます。
+順次データセットから VSAM へのコピーはロード、逆に VSAM から順次データ
+セットへのコピーはアンロードと呼ばれます。
+//VSLOAD EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSUT1 DD DISP=SHR,DSN=UAP1.UNLOAD
+//SYSUT2 DD DISP=SHR,DSN=UAP1.MASTER
+//SYSIN DD *
+ REPRO IFILE(SYSUT1) OFILE(SYSUT2) REPLACE
+ REPRO IFILE(SYSUT1) OFILE(SYSUT2) REUSE
+// 
+逆引きリファレンス
+データセットをコピーする
+105
+MSP / VOS3 MSP:KQCAMS VOS3:JSCVSUT
+入?側を PS、出?側を VSAM とすればロード処理になります。KSDS データセ
+ットの場合、入?側レコードはキーの昇順に並んでいる必要があります。
+REPLACE オプションを指定しない限り、同じキーを持つレコードは重複してロー
+ドさせることはできません。
+REUSE オプションは出?側の VSAM データセットを、?旦クリアーして先頭
+から再ロードする場合に指定します。REUSE オプションがなければ、ESDS デー
+タセットの場合、常に最後尾レコードへの追加となります。KSDS データセット
+の場合、新たなキーを持つレコードとして追加されます。
+なお REUSE オプションは、再使用可能クラスター*2 として定義されている
+VSAM データセットに使用できます。
+*2 DEFINE CLUSTER や ALTER コマンドで REUSE オプションが指定されたデータセット。
+//VSUNLOAD EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSUT1 DD DISP=SHR,DSN=UAP1.MASTER
+//SYSUT2 DD DISP=(,CATLG),DSN=UAP1.UNLOAD,
+// UNIT=SYSDA,VOL=SER=WRKVOL,SPACE=(CYL,(10,1)),
+// DCB=(RECFM=VB,LRECL=132)
+//SYSIN DD *
+ REPRO IFILE(SYSUT1) OFILE(SYSUT2)
+//
+入?側を VSAM、出?側を PS とすればアンロード処理になります。
+出?側 PS データセットの DCB は、入?側 VSAM データセットのレコード形式、
+レコード?と?盾しない値を指定しなければなりません。また可変?レコードの
+VSAM は固定?レコードの PS へはアンロードできません。
+//SYSIN DD *
+ LISTCAT ENTRY(UAP1.MASTER) ALL
+//
+必要ならば LISTCAT ALL コマンドでアンロードする VSAM の属性情報を確認
+します。レコード?は AVGLRECL と MAXLRECL で示されます。両方が同じ値な
+ら固定?レコード、異なるなら可変?レコードとしてレコード?を算出できます。
+可変?レコードの場合、出?側 PS データセットの LRECL には RDW の 4 バイト
+分を加えることに注意して下さい。ただし可変?レコードの場合、入?側 VSAM
+に実際に格納されているレコードの内、最も?いレコードが格納できれば、必ず
+しも MAXLRECL に合わせる必要はありません。 
+逆引きリファレンス
+データセットをコピーする
+106
+区分データセットをコピーする
+//PDSCOPY EXEC PGM=IEBCOPY,REGION=1M
+//SYSPRINT DD SYSOUT=*
+//SYSUT1 DD DISP=SHR,DSN=UAP1.SOURCE
+//SYSUT2 DD DISP=(,CATLG),DSN=UAP1.WORKLIB,
+// UNIT=SYSDA,VOL=SER=WRKVOL,SPACE=(CYL,(10,1,20))
+//SYSIN DD DUMMY
+//
+MSP / VOS3 MSP:JSECOPY VOS3:JSDPCPY
+区分データセットを複製するには IEBCOPY ユーティリティーを使用します。
+SYSPRINT に実?サマリー・リストの出?先、SYSUT1 に複写元データセット、
+SYSUT2 に複写先データセット、SYSIN にユーティリティーの制御パラメーター
+を指定します。複写元データセットの内容を単純にコピーするなら SYSIN には
+DUMMY を定義できます。SYSIN を DUMMY にすると、複写元データセット内の
+すべてのメンバー内容とディレクトリ情報がコピーされます。
+//SYSIN DD *
+ COPY INDD=SYSUT1,OUTDD=SYSUT2
+//
+VOS3の場合、全メンバーのコピーであっても SYSINに DUMMY指定はできず、
+必ず COPY 制御ステートメントを指定しなければなりません。
+複写先データセットが新規データセットの場合、DD ステートメントの DCB 属
+性を省略すれば、RECFM、BLKSIZE、LRECL も複写元からコピーされます。
+BLKSIZE を変更する場合は、DCB=(BLKSIZE=nnnnn)パラメーターを指定する
+ことができます。
+区分データセットを順次データセットにコピーする
+//PDSCOPY EXEC PGM=IEBCOPY,REGION=1M
+//SYSPRINT DD SYSOUT=*
+//SYSUT1 DD DISP=SHR,DSN=UAP1.SOURCE
+//SYSUT2 DD DISP=(,CATLG),DSN=UAP1.SOURCE.UNLOAD,
+// UNIT=SYSDA,VOL=SER=WRKVOL,SPACE=(CYL,(10,1))
+//SYSIN DD DUMMY
+//
+MSP / VOS3 MSP:JSECOPY VOS3:JSDPCPY
+区分データセットを順次データセットにコピーすることもできます。これはア
+ンロードとも呼ばれ、コピーされた順次データセットがアンロード・データセッ
+逆引きリファレンス
+データセットをコピーする
+107
+トです。アンロード・データセットは、そのままではメンバー内容の表示や編集
+はできませんが、バックアップやテープでの保管などのために作成されます。
+複写元にアンロード・データセット、複写先に区分データセットを指定すれば、
+ロード操作となり、元の区分データセットの内容に復元することができます。
+複数の区分データセットを 1 つにまとめる
+//PDSMERGE EXEC PGM=IEBCOPY
+//SYSPRINT DD SYSOUT=*
+//IN1 DD DISP=SHR,DSN=UAP1.SOURCE.MAIN
+//IN2 DD DISP=SHR,DSN=UAP1.SOURCE.SUB
+//IN3 DD DISP=SHR,DSN=UAP1.SOURCE.MAC
+//OUT DD DISP=OLD,DSN=UAP1.SOURCE
+//SYSIN DD *
+ COPY I=(IN1,IN2,IN3),O=OUT
+//
+I は INDD、O は OUTDD の省略形
+//SYSIN DD *
+ COPY I=(IN1,IN2,(IN3,R)),O=OUT
+//
+MSP / VOS3 MSP:JSECOPY VOS3:JSDPCPY
+複数の区分データセットを 1 つにまとめることもできます。COPY 制御ステー
+トメントの INDD パラメーターに複写元データセットを定義した DD 名、OUTDD
+パラメーターに複写先データセットを定義した DD 名を指定します。コピーは
+INDD パラメーターに指定した DD 名の順番で処理されます。
+同名のメンバーが存在すると、後から出現したメンバーはコピーされません。
+重複するメンバーがある場合、優先したいメンバーを持つデータセットを定義し
+た DD 名を、先に INDD パラメーターで指定します。後から出現したメンバーを
+上書きコピーする場合、2 番目の SYSIN サンプルのように、INDD パラメーター
+内の DD 名に R オプションを付けて括弧でくくります。 
+逆引きリファレンス
+データセットをコピーする
+108
+ロードモジュール・データセットをコピーする
+//LMDCOPY EXEC PGM=IEBCOPY,REGION=1M
+//SYSPRINT DD SYSOUT=*
+//SYSUT1 DD DISP=SHR,DSN=UAP1.LINKLIB
+//SYSUT2 DD DISP=(,CATLG),DSN=UAP1.WORKLIB,
+// UNIT=SYSDA,VOL=SER=WRKVOL,SPACE=(CYL,(10,1,20)),
+// DCB=(RECFM=U,BLKSIZE=4096)
+//SYSIN DD *
+ COPYMOD I=SYSUT1,O=SYSUT2
+//
+MSP / VOS3 MSP:JSECOPY
+IEBCOPY を使ってロードモジュール・データセットをコピーする場合は、ブロ
+ックサイズに注意しなければなりません。複写先データセットのブロック?が複
+写元より小さい場合、メンバーの内容によってはブロックサイズを超えた?さで
+レコードが書き込まれてしまいます。プログラムとしてローディングすることは
+できますが、ブロックサイズを超えた?さのレコードが存在することで、他のユ
+ーティリティーなどで I/O エラーを引き起こす可能性があります。
+COPYMOD 制御ステートメントを使うと、複写先のブロックサイズに合わせて、
+ロードモジュール・レコードを再ブロックすることができます。
+MSP の場合、COPYMOD 制御ステートメントに、複写先データセットのブロッ
+クサイズを指定した MAXBLK パラメーターを追加します。VOS3 の JSDPCPY に
+は同等の機能はありません。ロード・モジュールを再ブロックするには、リンケ
+ージエディターを使用する必要があります。
+区分データセットを PDSE データセットにコピーする
+区分データセットと PDSE データセットは相互にコピーし合うことができます。
+複写元と複写先のデータセットが、PDS 同士、PDSE 同士でなければ、IEBCOPY
+は複写先データセット・タイプに変換してコピーします。
+//PDS2PDSE EXEC PGM=IEBCOPY,REGION=2M
+//SYSPRINT DD SYSOUT=*
+//SYSUT1 DD DISP=SHR,DSN=UAP1.LINKLIB
+//SYSUT2 DD DISP=(,CATLG),DSN=UAP1.PDSE.LINKLIB,
+// UNIT=SYSDA,VOL=SER=WRKVOL,SPACE=(CYL,(10,10)),
+// DSNTYPE=LIBRARY,DCB=DSORG=PO
+//SYSIN DD DUMMY
+// 
+逆引きリファレンス
+データセットをコピーする
+109 
