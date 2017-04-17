@@ -1,0 +1,79 @@
+Dim fso
+Dim inputFile
+Dim outputFile
+Dim strOutput
+Dim objArgs
+
+Set objArgs = Wscript.Arguments
+
+Set fso = WScript.CreateObject("Scripting.FileSystemObject")
+' 読み込みファイルの指定 (相対パスなのでこのスクリプトと同じフォルダに置いておくこと)
+Set inputFile = fso.OpenTextFile(objArgs(0), 1, False, 0)
+
+' 書き出しファイルの指定 (今回は新規作成する)
+
+Set outputFile = fso.OpenTextFile("outputText.txt", 2, True)
+
+' 読み込みファイルから1行ずつ読み込み、書き出しファイルに書き出すのを最終行まで繰り返す
+Do Until inputFile.AtEndOfStream
+  Dim lineStr
+  lineStr = inputFile.ReadLine
+  Call wReadCsv(lineStr, strOutput)
+  outputFile.WriteLine strOutput
+  strOutput = ""
+Loop
+
+' バッファを Flush してファイルを閉じる
+inputFile.Close
+outputFile.Close
+MsgBox "終了"
+
+Sub wReadCsv(ByVal bufbuf, strResult)
+    Dim char1
+    Dim convNum
+    Dim num
+    Dim aa(500)
+    Dim intTemp
+    Dim yyyymmdd
+    Dim flag
+    convNum = 0
+    num = 1
+    flag = False
+    For n = 1 To Len(bufbuf)
+        char1 = Mid(bufbuf, n, 1)
+        Select Case char1
+            Case ","
+                If IsNumeric(aa(num)) Then
+                    Select Case num
+                      Case 3
+                        If flag = True Then
+                          aa(num) = yyyymmdd & "/" & aa(num)
+                          flag = False
+                        Else
+                          yyyymmdd = aa(num)
+                          flag = True
+                          num = num - 1
+                        End If
+                      Case Else
+                        aa(num) = CLng(aa(num))
+                    End Select
+                Else
+                    aa(num) = ""
+                    num = num - 1
+                End If
+                num = num + 1
+                aa(num) = ""
+            Case Chr(34)
+            Case Else
+                aa(num) = aa(num) & char1
+        End Select
+    Next
+    For Each intTemp In aa '全要素に対して繰り返す
+      If intTemp <> "" then
+        strResult = strResult & intTemp & ","
+      End If
+    Next
+End Sub
+
+@echo off
+cscript //nologo .\CSVフォーマット変換.vbs testdata1.CSV
