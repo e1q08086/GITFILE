@@ -1,0 +1,56 @@
+Sub start()
+    Dim l_mail As Outlook.MailItem
+    Set l_mail = Application.CreateItemFromTemplate("C:\Users\kazuki3\AppData\Roaming\Microsoft\Templates\【発行文書】システム作業申請書xx-xxx.oft") ' メールの取得
+    l_mail.Subject = Replace(l_mail.Subject, "xx-xxx", "17-111")
+    Call ReplaceMailBody(l_mail, "xx-xxx", "17-111")
+    Call ReplaceMailBody(l_mail, "aaaaaa", "https://takamon-since2017.com/583/")
+    l_mail.Display
+    l_mail.Save
+End Sub
+
+
+
+' メールの本文に含まれる特定の文字列を、指定した文字列に置き換えます。
+' <params>
+'   p_mail
+'       対象のメール。
+'   p_find
+'       検索する文字列。
+'   p_replace
+'       置き換える文字列。
+Private Sub ReplaceMailBody( _
+    ByVal p_mail As Outlook.MailItem, ByVal p_find As String, ByVal p_replace As String)
+ 
+    Select Case p_mail.BodyFormat
+    Case Outlook.OlBodyFormat.olFormatPlain
+        p_mail.Body = Replace(p_mail.Body, p_find, p_replace)
+    Case Outlook.OlBodyFormat.olFormatHTML
+        p_mail.HTMLBody = Replace(p_mail.HTMLBody, HtmlEncode(p_find), HtmlEncode(p_replace))
+    Case Else
+        ' ランタイム エラーにするなどの対応をするのも良し。
+    End Select
+End Sub
+
+ 
+' 指定した文字列を HTML エンコードします。
+' <params>
+'   p_expression
+'       HTML エンコードを行う対象の文字列。
+' <returns>
+'   p_expression が HTML エンコードされた文字列。
+Private Function HtmlEncode(ByVal p_expression As String) As String
+    Dim l_result As String
+    l_result = p_expression
+    
+    ' 本当はもっと作りこむ必要があるだろうけど、とりあえず代表的なものだけ対応。
+'    l_result = Replace(l_result, """", "&quot;")
+    l_result = Replace(l_result, "&", "&amp;")
+    l_result = Replace(l_result, "<", "&lt;")
+    l_result = Replace(l_result, ">", "&gt;")
+ 
+    l_result = Replace(l_result, vbCrLf, "<br />")
+    
+    HtmlEncode = l_result
+End Function
+
+s
