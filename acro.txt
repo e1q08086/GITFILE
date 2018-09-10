@@ -1,0 +1,41 @@
+@echo off
+
+START ACRORD32.EXE /n /t %~f1
+
+
+
+
+
+Sub insatu()
+    Dim fol As String
+    Dim f As String
+    Dim wb As Workbook
+    Dim wscnt As Long
+    Dim i As Long
+    Dim obj As WshShell
+    Dim sPath
+    
+    sPath = "C:\Users\kazuki3\Desktop\insatu\acro.bat"
+    fol = "C:\Users\kazuki3\Desktop\insatu\0704_r.pdf"
+
+    Set obj = New WshShell
+    
+    Call obj.Run(sPath & " " & fol, WaitOnReturn:=True)
+    
+    Debug.Print "èIóπ"
+    
+    
+End Sub
+
+
+Sub sample()
+    With CreateObject("Word.Application")
+        .Documents.Open Filename:="C:\Users\kazuki3\Desktop\insatu\test1111.docx" 'àÛç¸ÇµÇΩÇ¢ï∂èë
+        .ActiveDocument.PrintOut
+        .ActiveDocument.Close
+        .Quit
+    End With
+    
+    Debug.Print
+    
+End Sub
