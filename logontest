@@ -1,0 +1,54 @@
+Set objShell = WScript.CreateObject("WScript.Shell")
+objShell.RegWrite "HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\Zoom\ZoomFactor",100000,"REG_DWORD"
+
+Set objIE = CreateObject("InternetExplorer.Application")
+objIE.Visible = True
+
+objIE.FullScreen = False
+objIE.Top = 0
+objIE.Left = 0
+objIE.Width = 1280
+objIE.Height = 964
+
+objIE.Toolbar = True
+objIE.MenuBar = True
+objIE.AddressBar = True
+objIE.StatusBar = True
+
+objIE.Navigate2 "https://www.yahoo.co.jp/"
+
+Do Until objIE.Busy = False
+    WScript.sleep(250)
+Loop
+
+If InStr(objIE.document.body.outerHTML, "こんにちは、<span class=""Util-textBold"">e1q08086</span>さん") > 0 Then
+    MsgBox "ログイン済み"
+    WScript.Quit
+End If
+
+objIE.Navigate2 "https://login.yahoo.co.jp/config/login?.src=www&.done=https://www.yahoo.co.jp"
+
+Do Until objIE.Busy = False
+    WScript.sleep(250)
+Loop
+    '検索窓に「VBA」と入力
+    objIE.document.getElementById("username").Value = "e1q08086"
+   
+    '5秒停止
+    WScript.sleep(250)
+   
+    '検索ボタンを押す
+    objIE.document.getElementById("btnNext").Click    'フォームの内容を送信
+    WScript.sleep(250)
+    objIE.document.getElementById("passwd").Value = "password"    	'id="user_pass"にパスワードを入力
+    WScript.sleep(250)
+    objIE.document.getElementById("btnSubmit").Click    'フォームの内容を送信
+    WScript.sleep(250)
+    
+'    Call IEButtonClick(objIE, "btnNext")
+
+    '5秒停止
+    WScript.sleep(250)
+
+Set WSHShell = WScript.CreateObject("WScript.Shell")
+WSHShell.AppActivate "Explorer"
