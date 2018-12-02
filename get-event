@@ -1,1 +1,2 @@
 Get-WinEvent -FilterHashTable @{LogName='system','application'; Level=1,2,3; StartTime=$yesterday} | Select timeCreated,levelDisplayName,providerName,id,@{name="message";expression={$_.message.Replace("`n",";")}}| Export-CSV test111.txt -Encoding Default
+Get-WinEvent -FilterHashtable @{LogName='system','application'; Level=1,2,3; StartTime="2018/11/01"} | Select timeCreated,{$_.KeywordsDisplayNames},@{name="message";expression={$_.message.Replace("`r`n",";").Replace("`n",";")}},node,category,categorystring | Export-Csv datatest.csv -Encoding Default  -Delimiter `t
