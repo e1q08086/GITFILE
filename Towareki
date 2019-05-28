@@ -1,0 +1,37 @@
+Option Explicit
+Sub main()
+    Dim result As String
+    result = ToWareki("2020/11")
+    Debug.Print result
+End Sub
+
+
+'-------------------------------------------------------------------------------
+' Purpose:  西暦を和暦へ変換。
+' Inputs:   西暦(yyyy/mm/dd)
+' Returns: 和暦(平成yy年mm月dd日)
+'-------------------------------------------------------------------------------
+Function ToWareki(sDate)
+    Dim dt As Date
+    Dim gg As String
+    Dim yy As String
+ dt = CDate(sDate)
+ 
+    If dt <= DateSerial(1912, 7, 29) Then
+        gg = "明治"
+        yy = Year(dt) - 1867
+    ElseIf dt >= DateSerial(1912, 7, 30) And dt <= DateSerial(1926, 12, 24) Then
+        gg = "大正"
+        yy = Year(dt) - 1911
+    ElseIf dt >= DateSerial(1926, 12, 25) And dt <= DateSerial(1989, 1, 7) Then
+        gg = "昭和"
+        yy = Year(dt) - 1925
+    ElseIf dt >= DateSerial(1989, 1, 8) And dt <= DateSerial(2019, 4, 30) Then
+        gg = "平成"
+        yy = Year(dt) - 1988
+    ElseIf dt >= DateSerial(2019, 5, 1) Then
+        gg = "令和"
+        yy = Year(dt) - 2018
+    End If
+    ToWareki = gg & yy & "年" & Format(sDate, "mm") & "月" & Format(sDate, "dd") & "日"
+End Function
